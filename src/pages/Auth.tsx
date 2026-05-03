@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/store/cart";
 import { Button } from "@/components/ui/button";
@@ -68,12 +69,11 @@ export default function AuthPage() {
 
   const handleGoogle = async () => {
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/account` },
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/account`,
     });
-    if (error) {
-      toast.error(error.message);
+    if (result?.error) {
+      toast.error(result.error.message ?? "Could not sign in with Google.");
       setBusy(false);
     }
   };
