@@ -15,12 +15,6 @@ const ComingSoon = ({ title, blurb, cta = "/shop", ctaLabel = "Shop the routine"
 export const Quiz = () => (
   <ComingSoon title="The skin quiz." blurb="A personalised routine recommendation based on your skin type, sensitivity, and concerns. Arriving in the next update." />
 );
-export const Auth = () => (
-  <ComingSoon title="Account access." blurb="Sign in and signup with email or Google. Arriving in the next update." cta="/" ctaLabel="Back home" />
-);
-export const Account = () => (
-  <ComingSoon title="Your account." blurb="Order history, saved addresses, and subscription management. Arriving in the next update." cta="/" ctaLabel="Back home" />
-);
 export const Checkout = () => (
   <ComingSoon title="Secure checkout." blurb="Stripe-powered checkout with discount codes and shipping options. Arriving in the next update." cta="/shop" ctaLabel="Continue shopping" />
 );
