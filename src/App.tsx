@@ -9,7 +9,9 @@ import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import Routine from "./pages/Routine";
 import About from "./pages/About";
-import { Quiz, Auth, Account, Checkout, Admin } from "./pages/Placeholders";
+import { Quiz, Checkout, Admin } from "./pages/Placeholders";
+import Auth from "./pages/Auth";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

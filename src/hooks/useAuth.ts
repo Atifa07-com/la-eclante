@@ -17,9 +17,17 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     // Listener first
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, sess) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((evt, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
+      if (evt === "SIGNED_IN") {
+        // Defer to avoid deadlocks inside the auth callback.
+        setTimeout(() => {
+          import("@/store/cart").then(({ useCart }) => {
+            useCart.getState().syncFromServer();
+          });
+        }, 0);
+      }
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
