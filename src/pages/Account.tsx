@@ -3,16 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/products";
 import { toast } from "sonner";
-
-interface Order {
-  id: string;
-  created_at: string;
-  status: string;
-  total_cents: number;
-  currency: string;
-}
 
 interface Profile {
   full_name: string | null;
@@ -23,8 +14,6 @@ export default function AccountPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth?redirect=/account", { replace: true });
@@ -32,19 +21,12 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!user) return;
-    (async () => {
-      const [{ data: p }, { data: o }] = await Promise.all([
-        supabase.from("profiles").select("full_name, email").eq("id", user.id).maybeSingle(),
-        supabase
-          .from("orders")
-          .select("id, created_at, status, total_cents, currency")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false }),
-      ]);
-      setProfile(p);
-      setOrders(o ?? []);
-      setLoadingData(false);
-    })();
+    supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setProfile(data));
   }, [user]);
 
   const signOut = async () => {
@@ -77,40 +59,16 @@ export default function AccountPage() {
       <div className="mt-14 grid gap-12 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <h2 className="eyebrow mb-5">Order history</h2>
-          {loadingData ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : orders.length === 0 ? (
-            <div className="border border-border p-10 text-center">
-              <p className="font-serif text-2xl">No orders yet.</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Your future routines will appear here.
-              </p>
-              <Button asChild className="mt-6 rounded-none h-11 px-8 tracking-[0.14em] uppercase text-[12px]">
-                <Link to="/shop">Shop the routine</Link>
-              </Button>
-            </div>
-          ) : (
-            <ul className="divide-y divide-border border border-border">
-              {orders.map((o) => (
-                <li key={o.id} className="p-5 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium">Order #{o.id.slice(0, 8).toUpperCase()}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(o.created_at).toLocaleDateString("en-US", {
-                        year: "numeric", month: "long", day: "numeric",
-                      })}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm">{formatPrice(o.total_cents)}</p>
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground mt-1">
-                      {o.status}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+          <div className="border border-border p-10 text-center">
+            <p className="font-serif text-2xl">Track orders by email.</p>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+              Orders are processed by our checkout. You'll receive tracking and updates at the email
+              you used to check out.
+            </p>
+            <Button asChild className="mt-6 rounded-none h-11 px-8 tracking-[0.14em] uppercase text-[12px]">
+              <Link to="/shop">Continue shopping</Link>
+            </Button>
+          </div>
         </div>
 
         <aside className="space-y-10">

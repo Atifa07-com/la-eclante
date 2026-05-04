@@ -1,128 +1,206 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { supabase } from "@/integrations/supabase/client";
+import { persist, createJSONStorage } from "zustand/middleware";
+import {
+  CART_CREATE_MUTATION,
+  CART_LINES_ADD_MUTATION,
+  CART_LINES_REMOVE_MUTATION,
+  CART_LINES_UPDATE_MUTATION,
+  CART_QUERY,
+  ShopifyProduct,
+  formatCheckoutUrl,
+  isCartNotFoundError,
+  storefrontApiRequest,
+} from "@/lib/shopify";
 
-export interface CartLine {
-  productId: string;
-  slug: string;
-  name: string;
-  imageUrl: string;
-  unitPriceCents: number;
+export interface CartItem {
+  lineId: string | null;
+  product: ShopifyProduct;
+  variantId: string;
+  variantTitle: string;
+  price: { amount: string; currencyCode: string };
   quantity: number;
-  isSubscription: boolean;
+  selectedOptions: Array<{ name: string; value: string }>;
 }
 
-interface CartState {
-  lines: CartLine[];
+interface CartStore {
+  items: CartItem[];
+  cartId: string | null;
+  checkoutUrl: string | null;
+  isLoading: boolean;
+  isSyncing: boolean;
   open: boolean;
   setOpen: (v: boolean) => void;
-  add: (line: CartLine) => Promise<void>;
-  remove: (productId: string, isSubscription: boolean) => Promise<void>;
-  update: (productId: string, isSubscription: boolean, qty: number) => Promise<void>;
-  clear: () => Promise<void>;
-  syncFromServer: () => Promise<void>;
+  addItem: (item: Omit<CartItem, "lineId">) => Promise<void>;
+  updateQuantity: (variantId: string, quantity: number) => Promise<void>;
+  removeItem: (variantId: string) => Promise<void>;
+  clearCart: () => void;
+  syncCart: () => Promise<void>;
+  getCheckoutUrl: () => string | null;
   count: () => number;
-  subtotalCents: () => number;
 }
 
-const sameLine = (a: CartLine, productId: string, isSub: boolean) =>
-  a.productId === productId && a.isSubscription === isSub;
+async function createShopifyCart(item: CartItem) {
+  const data = await storefrontApiRequest<any>(CART_CREATE_MUTATION, {
+    input: { lines: [{ quantity: item.quantity, merchandiseId: item.variantId }] },
+  });
+  if (data?.data?.cartCreate?.userErrors?.length) return null;
+  const cart = data?.data?.cartCreate?.cart;
+  if (!cart?.checkoutUrl) return null;
+  const lineId = cart.lines.edges[0]?.node?.id;
+  if (!lineId) return null;
+  return { cartId: cart.id, checkoutUrl: formatCheckoutUrl(cart.checkoutUrl), lineId };
+}
 
-export const useCart = create<CartState>()(
+async function addLineToShopifyCart(cartId: string, item: CartItem) {
+  const data = await storefrontApiRequest<any>(CART_LINES_ADD_MUTATION, {
+    cartId,
+    lines: [{ quantity: item.quantity, merchandiseId: item.variantId }],
+  });
+  const userErrors = data?.data?.cartLinesAdd?.userErrors || [];
+  if (isCartNotFoundError(userErrors)) return { success: false, cartNotFound: true };
+  if (userErrors.length) return { success: false };
+  const lines = data?.data?.cartLinesAdd?.cart?.lines?.edges || [];
+  const newLine = lines.find((l: any) => l.node.merchandise.id === item.variantId);
+  return { success: true, lineId: newLine?.node?.id };
+}
+
+async function updateShopifyCartLine(cartId: string, lineId: string, quantity: number) {
+  const data = await storefrontApiRequest<any>(CART_LINES_UPDATE_MUTATION, {
+    cartId,
+    lines: [{ id: lineId, quantity }],
+  });
+  const userErrors = data?.data?.cartLinesUpdate?.userErrors || [];
+  if (isCartNotFoundError(userErrors)) return { success: false, cartNotFound: true };
+  return { success: !userErrors.length };
+}
+
+async function removeLineFromShopifyCart(cartId: string, lineId: string) {
+  const data = await storefrontApiRequest<any>(CART_LINES_REMOVE_MUTATION, {
+    cartId,
+    lineIds: [lineId],
+  });
+  const userErrors = data?.data?.cartLinesRemove?.userErrors || [];
+  if (isCartNotFoundError(userErrors)) return { success: false, cartNotFound: true };
+  return { success: !userErrors.length };
+}
+
+export const useCart = create<CartStore>()(
   persist(
     (set, get) => ({
-      lines: [],
+      items: [],
+      cartId: null,
+      checkoutUrl: null,
+      isLoading: false,
+      isSyncing: false,
       open: false,
       setOpen: (v) => set({ open: v }),
-      count: () => get().lines.reduce((s, l) => s + l.quantity, 0),
-      subtotalCents: () => get().lines.reduce((s, l) => s + l.quantity * l.unitPriceCents, 0),
+      count: () => get().items.reduce((s, l) => s + l.quantity, 0),
 
-      add: async (line) => {
-        const existing = get().lines.find((l) => sameLine(l, line.productId, line.isSubscription));
-        const next = existing
-          ? get().lines.map((l) =>
-              sameLine(l, line.productId, line.isSubscription)
-                ? { ...l, quantity: l.quantity + line.quantity }
-                : l
-            )
-          : [...get().lines, line];
-        set({ lines: next, open: true });
-
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.from("cart_items").upsert(
-            {
-              user_id: user.id,
-              product_id: line.productId,
-              quantity: existing ? existing.quantity + line.quantity : line.quantity,
-              is_subscription: line.isSubscription,
-            },
-            { onConflict: "user_id,product_id,is_subscription" }
-          );
+      addItem: async (item) => {
+        const { items, cartId, clearCart } = get();
+        const existing = items.find((i) => i.variantId === item.variantId);
+        set({ isLoading: true });
+        try {
+          if (!cartId) {
+            const result = await createShopifyCart({ ...item, lineId: null });
+            if (result) {
+              set({
+                cartId: result.cartId,
+                checkoutUrl: result.checkoutUrl,
+                items: [{ ...item, lineId: result.lineId }],
+                open: true,
+              });
+            }
+          } else if (existing) {
+            const newQty = existing.quantity + item.quantity;
+            if (!existing.lineId) return;
+            const result = await updateShopifyCartLine(cartId, existing.lineId, newQty);
+            if (result.success) {
+              set({
+                items: get().items.map((i) =>
+                  i.variantId === item.variantId ? { ...i, quantity: newQty } : i
+                ),
+                open: true,
+              });
+            } else if (result.cartNotFound) clearCart();
+          } else {
+            const result = await addLineToShopifyCart(cartId, { ...item, lineId: null });
+            if (result.success) {
+              set({
+                items: [...get().items, { ...item, lineId: result.lineId ?? null }],
+                open: true,
+              });
+            } else if (result.cartNotFound) clearCart();
+          }
+        } catch (e) {
+          console.error("addItem failed", e);
+        } finally {
+          set({ isLoading: false });
         }
       },
 
-      remove: async (productId, isSub) => {
-        set({ lines: get().lines.filter((l) => !sameLine(l, productId, isSub)) });
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from("cart_items")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("product_id", productId)
-            .eq("is_subscription", isSub);
+      updateQuantity: async (variantId, quantity) => {
+        if (quantity <= 0) return get().removeItem(variantId);
+        const { items, cartId, clearCart } = get();
+        const item = items.find((i) => i.variantId === variantId);
+        if (!item?.lineId || !cartId) return;
+        set({ isLoading: true });
+        try {
+          const result = await updateShopifyCartLine(cartId, item.lineId, quantity);
+          if (result.success) {
+            set({
+              items: get().items.map((i) => (i.variantId === variantId ? { ...i, quantity } : i)),
+            });
+          } else if (result.cartNotFound) clearCart();
+        } finally {
+          set({ isLoading: false });
         }
       },
 
-      update: async (productId, isSub, qty) => {
-        if (qty <= 0) return get().remove(productId, isSub);
-        set({
-          lines: get().lines.map((l) =>
-            sameLine(l, productId, isSub) ? { ...l, quantity: qty } : l
-          ),
-        });
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from("cart_items")
-            .update({ quantity: qty })
-            .eq("user_id", user.id)
-            .eq("product_id", productId)
-            .eq("is_subscription", isSub);
+      removeItem: async (variantId) => {
+        const { items, cartId, clearCart } = get();
+        const item = items.find((i) => i.variantId === variantId);
+        if (!item?.lineId || !cartId) return;
+        set({ isLoading: true });
+        try {
+          const result = await removeLineFromShopifyCart(cartId, item.lineId);
+          if (result.success) {
+            const next = get().items.filter((i) => i.variantId !== variantId);
+            next.length === 0 ? clearCart() : set({ items: next });
+          } else if (result.cartNotFound) clearCart();
+        } finally {
+          set({ isLoading: false });
         }
       },
 
-      clear: async () => {
-        set({ lines: [] });
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) await supabase.from("cart_items").delete().eq("user_id", user.id);
-      },
+      clearCart: () => set({ items: [], cartId: null, checkoutUrl: null }),
+      getCheckoutUrl: () => get().checkoutUrl,
 
-      syncFromServer: async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data } = await supabase
-          .from("cart_items")
-          .select("product_id, quantity, is_subscription, products(id, slug, name, price_cents, subscription_price_cents, product_images(url))")
-          .eq("user_id", user.id);
-        if (!data) return;
-        const lines: CartLine[] = data
-          .filter((row: any) => row.products)
-          .map((row: any) => ({
-            productId: row.product_id,
-            slug: row.products.slug,
-            name: row.products.name,
-            imageUrl: row.products.product_images?.[0]?.url ?? "",
-            unitPriceCents: row.is_subscription
-              ? (row.products.subscription_price_cents ?? row.products.price_cents)
-              : row.products.price_cents,
-            quantity: row.quantity,
-            isSubscription: row.is_subscription,
-          }));
-        set({ lines });
+      syncCart: async () => {
+        const { cartId, isSyncing, clearCart } = get();
+        if (!cartId || isSyncing) return;
+        set({ isSyncing: true });
+        try {
+          const data = await storefrontApiRequest<any>(CART_QUERY, { id: cartId });
+          if (!data) return;
+          const cart = data?.data?.cart;
+          if (!cart || cart.totalQuantity === 0) clearCart();
+        } catch (e) {
+          console.error("syncCart failed", e);
+        } finally {
+          set({ isSyncing: false });
+        }
       },
     }),
-    { name: "la-eclante-cart" }
+    {
+      name: "la-eclante-cart",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (s) =>
+        ({
+          items: s.items,
+          cartId: s.cartId,
+          checkoutUrl: s.checkoutUrl,
+        } as any),
+    }
   )
 );
