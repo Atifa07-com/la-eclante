@@ -4,7 +4,6 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/hooks/useAuth";
-import { useCart } from "@/store/cart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +16,6 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { user, loading } = useAuth();
-  const { syncFromServer } = useCart();
   const [mode, setMode] = useState<"signin" | "signup">(
     (params.get("mode") as "signin" | "signup") ?? "signin"
   );
@@ -28,10 +26,9 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      syncFromServer();
       navigate(params.get("redirect") ?? "/account", { replace: true });
     }
-  }, [user, loading, navigate, params, syncFromServer]);
+  }, [user, loading, navigate, params]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
