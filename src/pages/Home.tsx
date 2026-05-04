@@ -1,32 +1,16 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import heroProduct from "@/assets/hero-product.jpg";
-import routineLineup from "@/assets/routine-lineup.jpg";
 import aboutPortrait from "@/assets/about-portrait.jpg";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { resolveImage, formatPrice } from "@/lib/products";
+import { fetchProducts, formatMoney, type ShopifyProduct } from "@/lib/shopify";
 import { Leaf, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
 
-interface ProductCard {
-  id: string;
-  slug: string;
-  name: string;
-  tagline: string | null;
-  price_cents: number;
-  product_images: { url: string }[];
-}
-
 const Home = () => {
-  const [products, setProducts] = useState<ProductCard[]>([]);
+  const [products, setProducts] = useState<ShopifyProduct[]>([]);
 
   useEffect(() => {
-    supabase
-      .from("products")
-      .select("id, slug, name, tagline, price_cents, product_images(url)")
-      .eq("active", true)
-      .order("sort_order")
-      .then(({ data }) => setProducts((data ?? []) as ProductCard[]));
+    fetchProducts(8).then(setProducts).catch((e) => console.error(e));
   }, []);
 
   return (
@@ -81,12 +65,12 @@ const Home = () => {
         </p>
       </section>
 
-      {/* ROUTINE GRID */}
+      {/* PRODUCTS GRID */}
       <section className="bg-muted/40 py-24 md:py-32">
         <div className="container-wide">
           <div className="flex items-end justify-between mb-12 md:mb-16">
             <div>
-              <p className="eyebrow">The four-step ritual</p>
+              <p className="eyebrow">The collection</p>
               <h2 className="font-serif text-3xl md:text-5xl mt-3">A complete routine.</h2>
             </div>
             <Link to="/shop" className="hidden md:inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] hover:opacity-60">
@@ -94,32 +78,49 @@ const Home = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-12">
-            {products.map((p, i) => (
-              <Link
-                key={p.id}
-                to={`/products/${p.slug}`}
-                className="group reveal"
-                style={{ animationDelay: `${i * 60}ms` }}
-              >
-                <div className="aspect-[4/5] bg-background overflow-hidden">
-                  <img
-                    src={resolveImage(p.product_images[0]?.url)}
-                    alt={p.name}
-                    loading="lazy"
-                    width={1024}
-                    height={1280}
-                    className="w-full h-full object-cover transition-transform duration-700 ease-smooth group-hover:scale-[1.03]"
-                  />
-                </div>
-                <div className="mt-5">
-                  <p className="eyebrow">{p.tagline}</p>
-                  <h3 className="font-serif text-xl md:text-2xl mt-2">{p.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{formatPrice(p.price_cents)}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {products.length === 0 ? (
+            <div className="border border-border p-16 text-center">
+              <p className="font-serif text-3xl">No products found</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Tell us in the chat what to add and we'll publish your first product.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-12">
+              {products.slice(0, 4).map((p, i) => {
+                const img = p.node.images.edges[0]?.node;
+                return (
+                  <Link
+                    key={p.node.id}
+                    to={`/products/${p.node.handle}`}
+                    className="group reveal"
+                    style={{ animationDelay: `${i * 60}ms` }}
+                  >
+                    <div className="aspect-[4/5] bg-background overflow-hidden">
+                      {img && (
+                        <img
+                          src={img.url}
+                          alt={img.altText ?? p.node.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-700 ease-smooth group-hover:scale-[1.03]"
+                        />
+                      )}
+                    </div>
+                    <div className="mt-5">
+                      {p.node.productType && <p className="eyebrow">{p.node.productType}</p>}
+                      <h3 className="font-serif text-xl md:text-2xl mt-2">{p.node.title}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {formatMoney(
+                          p.node.priceRange.minVariantPrice.amount,
+                          p.node.priceRange.minVariantPrice.currencyCode
+                        )}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -137,25 +138,6 @@ const Home = () => {
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-sm md:mx-0 mx-auto">{body}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section className="bg-muted/40 py-24 md:py-32">
-        <div className="container-narrow">
-          <p className="eyebrow text-center">Loved by sensitive skin</p>
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12 mt-12">
-            {[
-              { quote: "The first routine that didn't trigger a reaction. My skin is calmer than it has been in years.", name: "Maya R." },
-              { quote: "Genuinely cleared my breakouts in three weeks. The texture on my cheeks is gone.", name: "Imani K." },
-              { quote: "Quietly luxurious — and it actually works. The serum is the most effective thing I've ever used.", name: "Sara L." },
-            ].map((t) => (
-              <figure key={t.name} className="bg-background p-8 md:p-10 border border-border">
-                <p className="font-serif text-xl md:text-2xl leading-snug">“{t.quote}”</p>
-                <figcaption className="mt-6 eyebrow">— {t.name}</figcaption>
-              </figure>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -185,8 +167,6 @@ const Home = () => {
           </Button>
         </div>
       </section>
-
-      <img src={routineLineup} alt="" aria-hidden className="hidden" />
     </div>
   );
 };

@@ -9,12 +9,32 @@ import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import Routine from "./pages/Routine";
 import About from "./pages/About";
-import { Quiz, Checkout, Admin } from "./pages/Placeholders";
+import { Quiz } from "./pages/Placeholders";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
+import { useCartSync } from "@/hooks/useCartSync";
 
 const queryClient = new QueryClient();
+
+const AppRoutes = () => {
+  useCartSync();
+  return (
+    <Routes>
+      <Route element={<SiteLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/products/:slug" element={<ProductDetail />} />
+        <Route path="/routine" element={<Routine />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/quiz" element={<Quiz />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -22,21 +42,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route element={<SiteLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/products/:slug" element={<ProductDetail />} />
-            <Route path="/routine" element={<Routine />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/admin/*" element={<Admin />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

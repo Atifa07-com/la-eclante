@@ -1,89 +1,54 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { resolveImage, formatPrice } from "@/lib/products";
+import { fetchProductByHandle, formatMoney, type ShopifyProductNode } from "@/lib/shopify";
 import { Button } from "@/components/ui/button";
-import { Star, Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useCart } from "@/store/cart";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-interface DetailedProduct {
-  id: string;
-  slug: string;
-  name: string;
-  tagline: string | null;
-  description: string | null;
-  who_its_for: string | null;
-  what_it_does: string | null;
-  how_to_use: string | null;
-  ingredients: string | null;
-  benefits: string[];
-  price_cents: number;
-  subscription_price_cents: number | null;
-  product_images: { url: string }[];
-}
-
-interface Review {
-  id: string;
-  author_name: string;
-  rating: number;
-  title: string | null;
-  body: string | null;
-  created_at: string;
-}
 
 const ProductDetail = () => {
   const { slug } = useParams();
   const nav = useNavigate();
-  const [p, setP] = useState<DetailedProduct | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [isSubscription, setIsSubscription] = useState(false);
-  const { add, setOpen } = useCart();
+  const [p, setP] = useState<ShopifyProductNode | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [variantId, setVariantId] = useState<string | null>(null);
+  const { addItem, isLoading } = useCart();
 
   useEffect(() => {
     if (!slug) return;
-    supabase
-      .from("products")
-      .select("*, product_images(url)")
-      .eq("slug", slug)
-      .eq("active", true)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!data) return nav("/shop");
-        setP(data as DetailedProduct);
-      });
+    fetchProductByHandle(slug)
+      .then((data) => {
+        if (!data) {
+          nav("/shop");
+          return;
+        }
+        setP(data);
+        setVariantId(data.variants.edges[0]?.node.id ?? null);
+      })
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
   }, [slug, nav]);
 
-  useEffect(() => {
-    if (!p) return;
-    supabase
-      .from("reviews")
-      .select("id, author_name, rating, title, body, created_at")
-      .eq("product_id", p.id)
-      .eq("approved", true)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => setReviews((data ?? []) as Review[]));
-  }, [p]);
-
-  if (!p) {
+  if (loading) {
     return <div className="container-narrow py-32 text-center text-muted-foreground">Loading…</div>;
   }
+  if (!p) return null;
 
-  const price = isSubscription && p.subscription_price_cents ? p.subscription_price_cents : p.price_cents;
-  const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+  const variant = p.variants.edges.find((v) => v.node.id === variantId)?.node ?? p.variants.edges[0]?.node;
+  const img = p.images.edges[0]?.node;
+  const benefits = (p.tags ?? []).filter((t) => !t.startsWith("_"));
 
   const handleAdd = async () => {
-    await add({
-      productId: p.id,
-      slug: p.slug,
-      name: p.name,
-      imageUrl: p.product_images[0]?.url ?? "",
-      unitPriceCents: price,
+    if (!variant) return;
+    await addItem({
+      product: { node: p },
+      variantId: variant.id,
+      variantTitle: variant.title,
+      price: variant.price,
       quantity: 1,
-      isSubscription,
+      selectedOptions: variant.selectedOptions ?? [],
     });
-    toast.success(`${p.name} added to your bag.`);
+    toast.success(`${p.title} added to your bag.`);
   };
 
   return (
@@ -96,133 +61,100 @@ const ProductDetail = () => {
 
       <section className="container-wide pb-24 grid md:grid-cols-12 gap-12 md:gap-16">
         <div className="md:col-span-7">
-          <img
-            src={resolveImage(p.product_images[0]?.url)}
-            alt={p.name}
-            width={1200}
-            height={1500}
-            className="w-full aspect-[4/5] object-cover bg-muted"
-          />
+          {img && (
+            <img
+              src={img.url}
+              alt={img.altText ?? p.title}
+              className="w-full aspect-[4/5] object-cover bg-muted"
+            />
+          )}
         </div>
 
         <div className="md:col-span-5 md:sticky md:top-24 md:self-start">
-          <p className="eyebrow">{p.tagline}</p>
-          <h1 className="font-serif text-4xl md:text-5xl mt-3 leading-tight">{p.name}</h1>
+          {p.productType && <p className="eyebrow">{p.productType}</p>}
+          <h1 className="font-serif text-4xl md:text-5xl mt-3 leading-tight">{p.title}</h1>
 
-          {reviews.length > 0 && (
-            <div className="flex items-center gap-2 mt-4">
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <Star
-                    key={n}
-                    size={14}
-                    className={n <= Math.round(avgRating) ? "fill-foreground text-foreground" : "text-muted-foreground"}
-                  />
+          <p className="mt-4 font-serif text-2xl">
+            {variant && formatMoney(variant.price.amount, variant.price.currencyCode)}
+          </p>
+
+          {p.description && (
+            <p className="mt-6 text-muted-foreground leading-relaxed whitespace-pre-line">
+              {p.description}
+            </p>
+          )}
+
+          {/* Variant picker */}
+          {p.variants.edges.length > 1 && (
+            <div className="mt-8">
+              <p className="eyebrow mb-2">Options</p>
+              <div className="flex flex-wrap gap-2">
+                {p.variants.edges.map((v) => (
+                  <button
+                    key={v.node.id}
+                    onClick={() => setVariantId(v.node.id)}
+                    disabled={!v.node.availableForSale}
+                    className={`px-4 py-2 border text-sm transition-colors ${
+                      variantId === v.node.id
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border hover:border-foreground"
+                    } ${!v.node.availableForSale ? "opacity-40 cursor-not-allowed" : ""}`}
+                  >
+                    {v.node.title}
+                  </button>
                 ))}
               </div>
-              <span className="text-xs text-muted-foreground">{reviews.length} reviews</span>
             </div>
           )}
 
-          <p className="mt-6 text-muted-foreground leading-relaxed">{p.description}</p>
-
-          {/* purchase options */}
-          {p.subscription_price_cents && (
-            <div className="mt-8 grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setIsSubscription(false)}
-                className={cn(
-                  "border p-4 text-left transition-colors",
-                  !isSubscription ? "border-foreground" : "border-border"
-                )}
-              >
-                <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">One-time</p>
-                <p className="mt-1 font-serif text-2xl">{formatPrice(p.price_cents)}</p>
-              </button>
-              <button
-                onClick={() => setIsSubscription(true)}
-                className={cn(
-                  "border p-4 text-left transition-colors",
-                  isSubscription ? "border-foreground" : "border-border"
-                )}
-              >
-                <p className="text-[11px] uppercase tracking-[0.16em] text-accent">Subscribe & save 10%</p>
-                <p className="mt-1 font-serif text-2xl">{formatPrice(p.subscription_price_cents)}</p>
-              </button>
-            </div>
-          )}
-
-          <Button onClick={handleAdd} size="lg" className="mt-6 w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]">
-            Add to bag — {formatPrice(price)}
+          <Button
+            onClick={handleAdd}
+            disabled={!variant?.availableForSale || isLoading}
+            size="lg"
+            className="mt-6 w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]"
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : !variant?.availableForSale ? (
+              "Sold out"
+            ) : (
+              <>Add to bag — {variant && formatMoney(variant.price.amount, variant.price.currencyCode)}</>
+            )}
           </Button>
 
-          <div className="mt-8 space-y-2">
-            {(p.benefits ?? []).map((b) => (
-              <div key={b} className="flex items-center gap-3 text-sm">
-                <Check size={14} className="text-accent" />
-                <span>{b}</span>
-              </div>
-            ))}
-          </div>
+          {benefits.length > 0 && (
+            <div className="mt-8 space-y-2">
+              {benefits.map((b) => (
+                <div key={b} className="flex items-center gap-3 text-sm">
+                  <Check size={14} className="text-accent" />
+                  <span>{b}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
-          <div className="mt-10 space-y-6">
-            {p.who_its_for && (
-              <Detail title="Who it's for" body={p.who_its_for} />
-            )}
-            {p.what_it_does && (
-              <Detail title="What it does" body={p.what_it_does} />
-            )}
-            {p.how_to_use && (
-              <Detail title="How to use" body={p.how_to_use} />
-            )}
-            {p.ingredients && (
-              <Detail title="Key ingredients" body={p.ingredients} />
-            )}
+          <div className="mt-10 space-y-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p>Dermatologist tested</p>
+            <p>Non-comedogenic</p>
+            <p>Fragrance-free</p>
           </div>
         </div>
       </section>
 
-      {/* Reviews */}
-      {reviews.length > 0 && (
-        <section className="bg-muted/40 py-20">
-          <div className="container-narrow">
-            <p className="eyebrow">Reviews</p>
-            <h2 className="font-serif text-3xl md:text-4xl mt-3">What customers say.</h2>
-            <div className="mt-12 grid md:grid-cols-2 gap-8">
-              {reviews.map((r) => (
-                <article key={r.id} className="bg-background p-8 border border-border">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <Star key={n} size={12} className={n <= r.rating ? "fill-foreground text-foreground" : "text-muted-foreground"} />
-                    ))}
-                  </div>
-                  {r.title && <h3 className="font-serif text-xl mt-3">{r.title}</h3>}
-                  {r.body && <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{r.body}</p>}
-                  <p className="mt-4 eyebrow">— {r.author_name}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Mobile sticky add to cart */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border p-3">
-        <Button onClick={handleAdd} className="w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]">
-          Add to bag — {formatPrice(price)}
+        <Button
+          onClick={handleAdd}
+          disabled={!variant?.availableForSale || isLoading}
+          className="w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]"
+        >
+          {!variant?.availableForSale
+            ? "Sold out"
+            : `Add to bag — ${variant ? formatMoney(variant.price.amount, variant.price.currencyCode) : ""}`}
         </Button>
       </div>
     </div>
   );
 };
-
-function Detail({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="border-t border-border pt-6">
-      <p className="eyebrow">{title}</p>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
-    </div>
-  );
-}
 
 export default ProductDetail;
