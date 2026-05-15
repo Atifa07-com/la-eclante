@@ -423,6 +423,51 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_submissions: {
+        Row: {
+          answers: Json
+          created_at: string
+          email: string
+          id: string
+          mild_score: number
+          moderate_score: number
+          name: string | null
+          purchased: boolean
+          routine: string
+          severe_score: number
+          severity: Database["public"]["Enums"]["acne_severity"]
+          tag: string
+        }
+        Insert: {
+          answers: Json
+          created_at?: string
+          email: string
+          id?: string
+          mild_score?: number
+          moderate_score?: number
+          name?: string | null
+          purchased?: boolean
+          routine: string
+          severe_score?: number
+          severity: Database["public"]["Enums"]["acne_severity"]
+          tag: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          email?: string
+          id?: string
+          mild_score?: number
+          moderate_score?: number
+          name?: string | null
+          purchased?: boolean
+          routine?: string
+          severe_score?: number
+          severity?: Database["public"]["Enums"]["acne_severity"]
+          tag?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           approved: boolean
@@ -540,6 +585,7 @@ export type Database = {
       }
     }
     Enums: {
+      acne_severity: "mild" | "moderate" | "severe"
       app_role: "admin" | "customer"
     }
     CompositeTypes: {
@@ -668,6 +714,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      acne_severity: ["mild", "moderate", "severe"],
       app_role: ["admin", "customer"],
     },
   },
