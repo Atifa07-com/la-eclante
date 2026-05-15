@@ -9,7 +9,8 @@ import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import Routine from "./pages/Routine";
 import About from "./pages/About";
-import { Quiz } from "./pages/Placeholders";
+import Quiz from "./pages/Quiz";
+import QuizResult from "./pages/QuizResult";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
@@ -28,6 +29,7 @@ const AppRoutes = () => {
         <Route path="/routine" element={<Routine />} />
         <Route path="/about" element={<About />} />
         <Route path="/quiz" element={<Quiz />} />
+        <Route path="/quiz/result" element={<QuizResult />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/account" element={<Account />} />
         <Route path="*" element={<NotFound />} />
