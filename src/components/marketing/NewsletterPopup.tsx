@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
+import { subscribeToNewsletter } from "@/lib/customer";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,9 @@ export function NewsletterPopup() {
     const parsed = emailSchema.safeParse(email);
     if (!parsed.success) return toast.error("Please enter a valid email.");
     setLoading(true);
-    const { error } = await supabase
-      .from("newsletter_subscribers")
-      .insert({ email: parsed.data, source: "popup" });
+    const result = await subscribeToNewsletter({ email: parsed.data, source: "popup" });
     setLoading(false);
-    if (error && !error.message.includes("duplicate")) {
+    if (!result.ok) {
       toast.error("Could not subscribe. Please try again.");
       return;
     }

@@ -1,8 +1,11 @@
 import { toast } from "sonner";
 
-export const SHOPIFY_API_VERSION = "2025-07";
-export const SHOPIFY_STORE_PERMANENT_DOMAIN = "la-eclante-e-commerce-6ju24.myshopify.com";
-export const SHOPIFY_STOREFRONT_TOKEN = "f01a7f9dd2c5902ff21f702bbf42acd3";
+export const SHOPIFY_API_VERSION =
+  import.meta.env.VITE_SHOPIFY_STOREFRONT_API_VERSION || "2025-07";
+export const SHOPIFY_STORE_PERMANENT_DOMAIN =
+  import.meta.env.VITE_SHOPIFY_STORE_DOMAIN || "";
+export const SHOPIFY_STOREFRONT_TOKEN =
+  import.meta.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN || "";
 export const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
 export interface ShopifyImage {

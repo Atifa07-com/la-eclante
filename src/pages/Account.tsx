@@ -1,59 +1,16 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-
-interface Profile {
-  full_name: string | null;
-  email: string;
-}
 
 export default function AccountPage() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
-
-  useEffect(() => {
-    if (!loading && !user) navigate("/auth?redirect=/account", { replace: true });
-  }, [loading, user, navigate]);
-
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("profiles")
-      .select("full_name, email")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => setProfile(data));
-  }, [user]);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    toast.success("Signed out.");
-    navigate("/", { replace: true });
-  };
-
-  if (loading || !user) return null;
-
   return (
     <section className="container-wide py-16 md:py-24">
-      <div className="flex items-end justify-between gap-6 flex-wrap">
-        <div>
-          <p className="eyebrow">Your account</p>
-          <h1 className="font-serif text-4xl md:text-5xl mt-3">
-            Hello{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}.
-          </h1>
-          <p className="text-sm text-muted-foreground mt-2">{profile?.email ?? user.email}</p>
-        </div>
-        <Button
-          variant="outline"
-          onClick={signOut}
-          className="rounded-none h-11 px-6 tracking-[0.14em] uppercase text-[12px]"
-        >
-          Sign out
-        </Button>
+      <div>
+        <p className="eyebrow">Your account</p>
+        <h1 className="font-serif text-4xl md:text-5xl mt-3">Hello.</h1>
+        <p className="text-sm text-muted-foreground mt-2">
+          Wire this page to Shopify&rsquo;s Customer Account API to show profile,
+          order history, and saved addresses.
+        </p>
       </div>
 
       <div className="mt-14 grid gap-12 lg:grid-cols-3">
@@ -62,10 +19,13 @@ export default function AccountPage() {
           <div className="border border-border p-10 text-center">
             <p className="font-serif text-2xl">Track orders by email.</p>
             <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-              Orders are processed by our checkout. You'll receive tracking and updates at the email
-              you used to check out.
+              Orders are processed by Shopify checkout. You&rsquo;ll receive tracking
+              and updates at the email you used.
             </p>
-            <Button asChild className="mt-6 rounded-none h-11 px-8 tracking-[0.14em] uppercase text-[12px]">
+            <Button
+              asChild
+              className="mt-6 rounded-none h-11 px-8 tracking-[0.14em] uppercase text-[12px]"
+            >
               <Link to="/shop">Continue shopping</Link>
             </Button>
           </div>

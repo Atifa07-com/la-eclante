@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { QUIZ, calculateScores, determineSeverity, RESULT_MAP } from "@/lib/quiz";
-import { supabase } from "@/integrations/supabase/client";
+import { submitQuiz } from "@/lib/customer";
 
 const emailSchema = z.object({
   name: z.string().trim().max(80).optional(),
@@ -55,19 +55,17 @@ export default function Quiz() {
     const severity = determineSeverity(scores);
     const meta = RESULT_MAP[severity];
 
-    const { error } = await supabase.from("quiz_submissions").insert({
+    const result = await submitQuiz({
       name: parsed.data.name ?? null,
       email: parsed.data.email,
-      answers: answers as never,
-      mild_score: scores.mild,
-      moderate_score: scores.moderate,
-      severe_score: scores.severe,
+      answers,
+      scores,
       severity,
       routine: meta.routine,
       tag: meta.tag,
     });
 
-    if (error) {
+    if (!result.ok) {
       toast.error("Could not save your results. Please try again.");
       setPhase("email");
       return;

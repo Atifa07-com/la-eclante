@@ -2,7 +2,6 @@ import { Link, NavLink as RouterNav, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ShoppingBag, User, Menu, X } from "lucide-react";
 import { useCart } from "@/store/cart";
-import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -14,7 +13,6 @@ const links = [
 
 export function Header() {
   const { setOpen, count } = useCart();
-  const { user, isAdmin } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const loc = useLocation();
@@ -69,15 +67,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1 md:gap-3">
-          {isAdmin && (
-            <Link
-              to="/admin"
-              className="hidden md:inline-block text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground px-3 py-1 border border-border rounded-sm"
-            >
-              Admin
-            </Link>
-          )}
-          <Link to={user ? "/account" : "/auth"} aria-label="Account" className="p-2 hover:opacity-70 transition-opacity">
+          <Link to="/auth" aria-label="Account" className="p-2 hover:opacity-70 transition-opacity">
             <User size={18} strokeWidth={1.5} />
           </Link>
           <button
@@ -112,11 +102,6 @@ export function Header() {
                 {l.label}
               </RouterNav>
             ))}
-            {isAdmin && (
-              <Link to="/admin" className="py-2 text-sm tracking-[0.14em] uppercase text-muted-foreground">
-                Admin
-              </Link>
-            )}
           </nav>
         </div>
       )}
