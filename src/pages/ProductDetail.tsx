@@ -4,6 +4,7 @@ import { fetchProductByHandle, formatMoney, type ShopifyProductNode } from "@/li
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
 import { useCart } from "@/store/cart";
+import { RecommendedProducts } from "@/components/product/RecommendedProducts";
 import { toast } from "sonner";
 
 const ProductDetail = () => {
@@ -140,6 +141,8 @@ const ProductDetail = () => {
           </div>
         </div>
       </section>
+
+      <RecommendedProducts excludeHandle={p.handle} />
 
       {/* Mobile sticky add to cart */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border p-3">
