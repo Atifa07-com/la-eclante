@@ -1,6 +1,6 @@
 # LA-ECLANTE
 
-Clinically effective skincare storefront. Frontend only — backend is Shopify.
+Clinically effective skincare storefront. Frontend only — backend is Shopify. visit la-eclante.com
 
 ## Stack
 
