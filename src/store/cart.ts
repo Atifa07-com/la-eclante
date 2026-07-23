@@ -152,6 +152,8 @@ export const useCart = create<CartStore>()(
               items: get().items.map((i) => (i.variantId === variantId ? { ...i, quantity } : i)),
             });
           } else if (result.cartNotFound) clearCart();
+        } catch (e) {
+          console.error("updateQuantity failed", e);
         } finally {
           set({ isLoading: false });
         }
@@ -168,6 +170,8 @@ export const useCart = create<CartStore>()(
             const next = get().items.filter((i) => i.variantId !== variantId);
             next.length === 0 ? clearCart() : set({ items: next });
           } else if (result.cartNotFound) clearCart();
+        } catch (e) {
+          console.error("removeItem failed", e);
         } finally {
           set({ isLoading: false });
         }
