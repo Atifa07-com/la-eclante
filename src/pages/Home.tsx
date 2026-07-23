@@ -8,9 +8,19 @@ import { Leaf, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
 
 const Home = () => {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetchProducts(8).then(setProducts).catch((e) => console.error(e));
+    fetchProducts(8)
+      .then((data) => {
+        // null => Shopify unavailable; keep the page, flag the grid.
+        if (data === null) setError(true);
+        else setProducts(data);
+      })
+      .catch((e) => {
+        console.error(e);
+        setError(true);
+      });
   }, []);
 
   return (
@@ -78,7 +88,14 @@ const Home = () => {
             </Link>
           </div>
 
-          {products.length === 0 ? (
+          {error ? (
+            <div className="border border-border p-16 text-center">
+              <p className="font-serif text-3xl">Oops! The collection is momentarily unavailable.</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                We couldn&rsquo;t load products just now. Please try again shortly.
+              </p>
+            </div>
+          ) : products.length === 0 ? (
             <div className="border border-border p-16 text-center">
               <p className="font-serif text-3xl">No products found</p>
               <p className="mt-3 text-sm text-muted-foreground">

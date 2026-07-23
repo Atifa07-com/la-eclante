@@ -5,12 +5,20 @@ import { fetchProducts, formatMoney, type ShopifyProduct } from "@/lib/shopify";
 const Shop = () => {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [sort, setSort] = useState<"featured" | "price-asc" | "price-desc">("featured");
 
   useEffect(() => {
     fetchProducts(50)
-      .then(setProducts)
-      .catch((e) => console.error(e))
+      .then((data) => {
+        // null => Shopify unavailable; [] => genuinely no products.
+        if (data === null) setError(true);
+        else setProducts(data);
+      })
+      .catch((e) => {
+        console.error(e);
+        setError(true);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -54,6 +62,13 @@ const Shop = () => {
       <section className="container-wide py-12 md:py-16">
         {loading ? (
           <p className="text-center text-muted-foreground py-20">Loading…</p>
+        ) : error ? (
+          <div className="border border-border p-16 text-center">
+            <p className="font-serif text-3xl">Oops! Our shop is taking a breather.</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Products are temporarily unavailable. Please try again in a moment.
+            </p>
+          </div>
         ) : sorted.length === 0 ? (
           <div className="border border-border p-16 text-center">
             <p className="font-serif text-3xl">No products found</p>

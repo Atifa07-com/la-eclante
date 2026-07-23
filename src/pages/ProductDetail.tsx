@@ -12,6 +12,7 @@ const ProductDetail = () => {
   const nav = useNavigate();
   const [p, setP] = useState<ShopifyProductNode | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [variantId, setVariantId] = useState<string | null>(null);
   const { addItem, isLoading } = useCart();
 
@@ -19,20 +20,49 @@ const ProductDetail = () => {
     if (!slug) return;
     fetchProductByHandle(slug)
       .then((data) => {
-        if (!data) {
+        if (data === undefined) {
+          // Shopify unavailable — keep the shopper here and show a fallback
+          // rather than bouncing them to /shop (which may also be down).
+          setError(true);
+          return;
+        }
+        if (data === null) {
+          // Product genuinely does not exist.
           nav("/shop");
           return;
         }
         setP(data);
         setVariantId(data.variants.edges[0]?.node.id ?? null);
       })
-      .catch((e) => console.error(e))
+      .catch((e) => {
+        console.error(e);
+        setError(true);
+      })
       .finally(() => setLoading(false));
   }, [slug, nav]);
 
   if (loading) {
     return <div className="container-narrow py-32 text-center text-muted-foreground">Loading…</div>;
   }
+
+  if (error) {
+    return (
+      <div className="container-narrow py-24 md:py-32 text-center">
+        <Link to="/shop" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
+          ← Back to shop
+        </Link>
+        <p className="eyebrow mt-10">Temporarily unavailable</p>
+        <h1 className="font-serif text-3xl md:text-5xl mt-4">
+          Oops! This product is currently unavailable.
+        </h1>
+        <p className="mt-5 max-w-md mx-auto text-muted-foreground leading-relaxed">
+          We couldn&rsquo;t load this product just now. Please try again in a moment —
+          the rest of the store is still open.
+        </p>
+      </div>
+    );
+  }
+
   if (!p) return null;
 
   const variant = p.variants.edges.find((v) => v.node.id === variantId)?.node ?? p.variants.edges[0]?.node;

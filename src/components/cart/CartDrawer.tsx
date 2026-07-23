@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/shopify";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus, X, ExternalLink, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export function CartDrawer() {
   const {
@@ -34,6 +35,10 @@ export function CartDrawer() {
     if (url) {
       window.open(url, "_blank");
       setOpen(false);
+    } else {
+      // Checkout URL is missing (e.g. cart couldn't sync with Shopify).
+      // Fail gracefully instead of doing nothing on click.
+      toast.error("Checkout is temporarily unavailable. Please try again in a moment.");
     }
   };
 

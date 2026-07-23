@@ -8,6 +8,9 @@ export const SHOPIFY_STOREFRONT_TOKEN =
   import.meta.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN || "";
 export const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
+/** Abort any Shopify request that takes longer than this (ms). */
+export const SHOPIFY_REQUEST_TIMEOUT_MS = 4000;
+
 export interface ShopifyImage {
   url: string;
   altText: string | null;
@@ -36,32 +39,68 @@ export interface ShopifyProduct {
   node: ShopifyProductNode;
 }
 
+/**
+ * Single choke point for every Shopify Storefront call.
+ *
+ * Resilience contract: this function NEVER throws and NEVER hangs. On any
+ * failure — network error, non-2xx status, GraphQL errors, or a response that
+ * takes longer than SHOPIFY_REQUEST_TIMEOUT_MS — it logs the cause and returns
+ * `undefined`. Callers treat `undefined` as "Shopify is unavailable" and fall
+ * back to a safe state (null / empty list) instead of crashing the page.
+ */
 export async function storefrontApiRequest<T = any>(
   query: string,
   variables: Record<string, any> = {}
 ): Promise<{ data?: T } | undefined> {
-  const response = await fetch(SHOPIFY_STOREFRONT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_TOKEN,
-    },
-    body: JSON.stringify({ query, variables }),
-  });
+  // Strict 4s timeout: abort the request if Shopify is slow or unresponsive.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), SHOPIFY_REQUEST_TIMEOUT_MS);
 
-  if (response.status === 402) {
-    toast.error("Shopify: Payment required", {
-      description:
-        "Your Shopify store needs an active billing plan. Visit https://admin.shopify.com to upgrade.",
+  try {
+    const response = await fetch(SHOPIFY_STOREFRONT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_TOKEN,
+      },
+      body: JSON.stringify({ query, variables }),
+      signal: controller.signal,
     });
-    return;
+
+    if (response.status === 402) {
+      toast.error("Shopify: Payment required", {
+        description:
+          "Your Shopify store needs an active billing plan. Visit https://admin.shopify.com to upgrade.",
+      });
+      return undefined;
+    }
+
+    if (!response.ok) {
+      // Log the status only — never echo tokens or request bodies.
+      console.error(`[shopify] request failed with HTTP ${response.status}`);
+      return undefined;
+    }
+
+    const data = await response.json();
+    if (data.errors) {
+      console.error(
+        "[shopify] GraphQL errors:",
+        data.errors.map((e: any) => e.message).join(", ")
+      );
+      return undefined;
+    }
+    return data;
+  } catch (err) {
+    // AbortError (timeout) or any network-level failure lands here.
+    if (err instanceof DOMException && err.name === "AbortError") {
+      console.error(`[shopify] request aborted after ${SHOPIFY_REQUEST_TIMEOUT_MS}ms timeout`);
+    } else {
+      console.error("[shopify] network request failed:", (err as Error)?.message ?? err);
+    }
+    return undefined;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-  const data = await response.json();
-  if (data.errors) throw new Error(`Shopify error: ${data.errors.map((e: any) => e.message).join(", ")}`);
-  return data;
 }
 
 const PRODUCT_FIELDS = `
@@ -100,20 +139,37 @@ const PRODUCT_BY_HANDLE_QUERY = `
   }
 `;
 
-export async function fetchProducts(first = 50, query?: string): Promise<ShopifyProduct[]> {
+/**
+ * Returns the product edges, or `null` when Shopify was unreachable. An empty
+ * array means Shopify responded but the catalog has no matching products —
+ * callers can use that distinction to show "unavailable" vs "no products yet".
+ */
+export async function fetchProducts(
+  first = 50,
+  query?: string
+): Promise<ShopifyProduct[] | null> {
   const res = await storefrontApiRequest<{ products: { edges: ShopifyProduct[] } }>(PRODUCTS_QUERY, {
     first,
     query: query ?? null,
   });
-  return res?.data?.products?.edges ?? [];
+  if (!res) return null; // Shopify unavailable (timeout / network / error)
+  return res.data?.products?.edges ?? [];
 }
 
-export async function fetchProductByHandle(handle: string): Promise<ShopifyProductNode | null> {
+/**
+ * Returns the product, `null` when it genuinely does not exist, or `undefined`
+ * when Shopify was unreachable. Callers should redirect on `null` but show an
+ * "unavailable" fallback on `undefined`.
+ */
+export async function fetchProductByHandle(
+  handle: string
+): Promise<ShopifyProductNode | null | undefined> {
   const res = await storefrontApiRequest<{ productByHandle: ShopifyProductNode | null }>(
     PRODUCT_BY_HANDLE_QUERY,
     { handle }
   );
-  return res?.data?.productByHandle ?? null;
+  if (!res) return undefined; // Shopify unavailable
+  return res.data?.productByHandle ?? null;
 }
 
 export function formatMoney(amount: string | number, currencyCode = "USD") {

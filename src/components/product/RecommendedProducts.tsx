@@ -25,6 +25,8 @@ export function RecommendedProducts({
     fetchProducts(12)
       .then((all) => {
         if (cancelled) return;
+        // null => Shopify unavailable; leave this non-critical section empty.
+        if (!all) return;
         setProducts(all.filter((p) => p.node.handle !== excludeHandle));
       })
       .catch((e) => console.error(e));
