@@ -92,7 +92,7 @@ const Shop = () => {
                       />
                     )}
                   </div>
-                  <div className="mt-5">
+                  <div className="px-4 pb-5 pt-4">
                     {p.node.productType && <p className="eyebrow">{p.node.productType}</p>}
                     <h3 className="font-serif text-xl md:text-2xl mt-2">{p.node.title}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">

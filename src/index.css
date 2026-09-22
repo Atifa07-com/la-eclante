@@ -116,7 +116,7 @@
   .section-space-lg { @apply py-24 md:py-32; }
   .hero-surface { background-image: var(--gradient-warm); }
   .product-card {
-    @apply rounded-lg bg-background shadow-none transition-all duration-300 ease-smooth;
+    @apply overflow-hidden rounded-lg bg-background shadow-none transition-all duration-300 ease-smooth;
   }
   .product-card:hover {
     @apply -translate-y-1 shadow-soft;
