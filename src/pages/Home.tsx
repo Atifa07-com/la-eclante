@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import heroProduct from "@/assets/hero-product.jpg";
+import heroProduct from "@/assets/hero-product.jfif";
 import aboutPortrait from "@/assets/about-portrait.jpg";
 import { Button } from "@/components/ui/button";
 import { fetchProducts, formatMoney, type ShopifyProduct } from "@/lib/shopify";

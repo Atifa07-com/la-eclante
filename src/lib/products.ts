@@ -1,8 +1,8 @@
 // Map server-stored image paths to bundled assets for our seed catalog.
-import cleanser from "@/assets/product-cleanser.jpg";
-import serum from "@/assets/product-serum.jpg";
-import moisturizer from "@/assets/product-moisturizer.jpg";
-import treatment from "@/assets/product-treatment.jpg";
+import cleanser from "@/assets/anti-acne-facewash.jfif";
+import serum from "@/assets/anti-acne-serum.jfif";
+import moisturizer from "@/assets/korean-glass-skin-moisturizer.jfif";
+import treatment from "@/assets/advanced-anti-acne-serum.jfif";
 
 const assetMap: Record<string, string> = {
   "/src/assets/product-cleanser.jpg": cleanser,

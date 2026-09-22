@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Droplet, FlaskConical, Sparkles } from "lucide-react";
-import routineLineup from "@/assets/routine-lineup.jpg";
-import productCleanser from "@/assets/product-cleanser.jpg";
-import productSerum from "@/assets/product-serum.jpg";
-import productMoisturizer from "@/assets/product-moisturizer.jpg";
-import productTreatment from "@/assets/product-treatment.jpg";
+import routineLineup from "@/assets/routine-lineup.jfif";
+import productCleanser from "@/assets/anti-acne-facewash.jfif";
+import productSerum from "@/assets/anti-acne-serum.jfif";
+import productMoisturizer from "@/assets/korean-glass-skin-moisturizer.jfif";
+import productTreatment from "@/assets/advanced-anti-acne-serum.jfif";
 
 type RoutineProduct = {
   name: string;
