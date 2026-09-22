@@ -81,7 +81,7 @@ export default function Quiz() {
   const q = QUIZ[step];
 
   return (
-    <main className="container-narrow max-w-2xl py-16 md:py-24">
+    <main className="container-narrow section-space max-w-2xl">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
           <span>{phase === "email" ? "Final step" : `Question ${step + 1} of ${QUIZ.length}`}</span>

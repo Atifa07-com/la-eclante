@@ -38,7 +38,7 @@ export function RecommendedProducts({
   if (products.length === 0) return null;
 
   return (
-    <section className="container-wide border-t border-border py-16 md:py-24">
+    <section className="container-wide section-space border-t border-border">
       <div className="flex items-end justify-between gap-4 mb-8">
         <h2 className="font-serif text-3xl md:text-4xl">{title}</h2>
       </div>

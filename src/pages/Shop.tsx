@@ -59,7 +59,7 @@ const Shop = () => {
 
       <div className="hairline container-wide" />
 
-      <section className="container-wide py-12 md:py-16">
+      <section className="container-wide section-space">
         {loading ? (
           <p className="text-center text-muted-foreground py-20">Loading…</p>
         ) : error ? (

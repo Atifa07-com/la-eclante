@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function AccountPage() {
   return (
-    <section className="container-wide py-16 md:py-24">
+    <section className="container-wide section-space">
       <div>
         <p className="eyebrow">Your account</p>
         <h1 className="font-serif text-4xl md:text-5xl mt-3">Hello.</h1>

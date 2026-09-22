@@ -42,12 +42,12 @@ const ProductDetail = () => {
   }, [slug, nav]);
 
   if (loading) {
-    return <div className="container-narrow py-32 text-center text-muted-foreground">Loading…</div>;
+    return <div className="container-narrow section-space-lg text-center text-muted-foreground">Loading…</div>;
   }
 
   if (error) {
     return (
-      <div className="container-narrow py-24 md:py-32 text-center">
+      <div className="container-narrow section-space-lg text-center">
         <Link to="/shop" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
           ← Back to shop
         </Link>

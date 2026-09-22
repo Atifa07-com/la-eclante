@@ -151,7 +151,7 @@ const Routine = () => {
           </div>
         </section>
 
-        <section className="container-narrow py-16 md:py-24">
+        <section className="container-narrow section-space">
           <ol className="space-y-16 md:space-y-20">
             {selected.products.map((p, i) => (
               <li
@@ -218,7 +218,7 @@ const Routine = () => {
   return (
     <div>
       <section className="hero-surface">
-        <div className="container-wide grid md:grid-cols-12 gap-10 md:gap-16 items-center py-20 md:py-28">
+        <div className="container-wide section-space grid md:grid-cols-12 gap-10 md:gap-16 items-center">
           <div className="md:col-span-6">
             <p className="eyebrow">Shop your routine</p>
             <h1 className="font-serif text-5xl md:text-7xl mt-4 leading-[1.02]">
@@ -248,7 +248,7 @@ const Routine = () => {
         </div>
       </section>
 
-      <section className="container-wide py-20 md:py-28">
+      <section className="container-wide section-space">
         <div className="text-center mb-14 md:mb-20">
           <p className="eyebrow">Three curated systems</p>
           <h2 className="font-serif text-4xl md:text-5xl mt-3">

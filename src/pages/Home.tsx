@@ -27,7 +27,7 @@ const Home = () => {
     <div>
       {/* HERO */}
       <section className="relative hero-surface overflow-hidden">
-        <div className="container-wide grid md:grid-cols-12 gap-10 md:gap-16 items-center py-16 md:py-28">
+        <div className="container-wide section-space grid md:grid-cols-12 gap-10 md:gap-16 items-center">
           <div className="md:col-span-6 reveal">
             <p className="eyebrow">For acne-prone & sensitive skin</p>
             <h1 className="font-serif text-hero mt-5">
@@ -64,7 +64,7 @@ const Home = () => {
       </section>
 
       {/* BRAND STORY */}
-      <section className="container-narrow py-24 md:py-32 text-center">
+      <section className="container-narrow section-space-lg text-center">
         <p className="eyebrow">Our philosophy</p>
         <h2 className="font-serif text-h2 mt-5 max-w-3xl mx-auto">
           We believe skincare for reactive skin should feel as gentle as it is effective.
@@ -76,7 +76,7 @@ const Home = () => {
       </section>
 
       {/* PRODUCTS GRID */}
-      <section className="bg-muted/40 py-24 md:py-32">
+      <section className="bg-muted/40 section-space-lg">
         <div className="container-wide">
           <div className="flex items-end justify-between mb-12 md:mb-16">
             <div>
@@ -142,7 +142,7 @@ const Home = () => {
       </section>
 
       {/* BENEFITS */}
-      <section className="container-wide py-24 md:py-32">
+      <section className="container-wide section-space-lg">
         <div className="grid md:grid-cols-3 gap-10 md:gap-16">
           {[
             { icon: Leaf, title: "Gentle by design", body: "Formulated without fragrance, essential oils, or irritants. Calm enough for daily use on reactive skin." },
@@ -159,7 +159,7 @@ const Home = () => {
       </section>
 
       {/* ABOUT TEASER */}
-      <section className="container-wide py-24 md:py-32 grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+      <section className="container-wide section-space-lg grid md:grid-cols-2 gap-12 md:gap-20 items-center">
         <img src={aboutPortrait} alt="A calm portrait" loading="lazy" className="w-full h-[480px] md:h-[600px] object-cover" />
         <div>
           <p className="eyebrow">Our story</p>
@@ -175,7 +175,7 @@ const Home = () => {
       </section>
 
       {/* FINAL CTA */}
-      <section className="bg-foreground text-background py-24 md:py-32 text-center">
+      <section className="bg-foreground text-background section-space-lg text-center">
         <div className="container-narrow">
           <p className="eyebrow text-background/60">Begin</p>
           <h2 className="font-serif text-h2 mt-4">Your clearest skin starts with the right routine.</h2>

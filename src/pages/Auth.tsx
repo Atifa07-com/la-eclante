@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function AuthPage() {
   return (
-    <section className="container-narrow py-20 md:py-28">
+    <section className="container-narrow section-space">
       <div className="max-w-md mx-auto text-center">
         <p className="eyebrow">Account</p>
         <h1 className="font-serif text-4xl md:text-5xl mt-3">Sign in.</h1>
