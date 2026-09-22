@@ -13,7 +13,7 @@ const About = () => (
       </div>
     </section>
 
-    <section className="container-wide section-space-lg grid md:grid-cols-2 gap-12 md:gap-20 items-start">
+    <section className="section-blush container-wide section-space-lg grid md:grid-cols-2 gap-12 md:gap-20 items-start">
       <img src={aboutPortrait} alt="Founder portrait" className="w-full h-[500px] md:h-[680px] object-cover" loading="lazy" />
       <div className="md:pt-8">
         <p className="eyebrow">A note from the founder</p>
@@ -35,7 +35,7 @@ const About = () => (
       </div>
     </section>
 
-    <section className="bg-muted/40 section-space-lg">
+    <section className="container-wide section-space-lg">
       <div className="container-narrow">
         <div className="grid md:grid-cols-3 gap-10">
           {[

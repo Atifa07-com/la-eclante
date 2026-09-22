@@ -52,19 +52,21 @@ const Home = () => {
             </div>
           </div>
           <div className="md:col-span-6 reveal" style={{ animationDelay: "120ms" }}>
-            <img
-              src={heroProduct}
-              alt="LA-ECLANTE balancing serum"
-              width={1600}
-              height={1200}
-              className="w-full h-[460px] md:h-[640px] object-cover shadow-soft"
-            />
+            <div className="product-media">
+              <img
+                src={heroProduct}
+                alt="LA-ECLANTE balancing serum"
+                width={1600}
+                height={1200}
+                className="w-full h-[460px] md:h-[640px] object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* BRAND STORY */}
-      <section className="container-narrow section-space-lg text-center">
+      <section className="section-blush container-narrow section-space-lg text-center">
         <p className="eyebrow">Our philosophy</p>
         <h2 className="font-serif text-h2 mt-5 max-w-3xl mx-auto">
           We believe skincare for reactive skin should feel as gentle as it is effective.
@@ -76,7 +78,7 @@ const Home = () => {
       </section>
 
       {/* PRODUCTS GRID */}
-      <section className="bg-muted/40 section-space-lg">
+      <section className="section-space-lg">
         <div className="container-wide">
           <div className="flex items-end justify-between mb-12 md:mb-16">
             <div>
@@ -113,7 +115,7 @@ const Home = () => {
                     className="product-card group reveal"
                     style={{ animationDelay: `${i * 60}ms` }}
                   >
-                    <div className="aspect-[4/5] bg-background overflow-hidden">
+                    <div className="aspect-[4/5] bg-background overflow-hidden rounded-md">
                       {img && (
                         <img
                           src={img.url}
@@ -123,7 +125,7 @@ const Home = () => {
                         />
                       )}
                     </div>
-                    <div className="mt-5">
+                    <div className="px-2 pb-2 pt-3">
                       {p.node.productType && <p className="eyebrow">{p.node.productType}</p>}
                       <h3 className="font-serif text-h3 mt-2">{p.node.title}</h3>
                       <p className="mt-1 text-sm text-muted-foreground">
@@ -142,7 +144,7 @@ const Home = () => {
       </section>
 
       {/* BENEFITS */}
-      <section className="container-wide section-space-lg">
+      <section className="section-blush container-wide section-space-lg">
         <div className="grid md:grid-cols-3 gap-10 md:gap-16">
           {[
             { icon: Leaf, title: "Gentle by design", body: "Formulated without fragrance, essential oils, or irritants. Calm enough for daily use on reactive skin." },
@@ -150,7 +152,7 @@ const Home = () => {
             { icon: Sparkles, title: "Barrier-supporting", body: "Restores rather than strips. Designed to work with your skin, not against it." },
           ].map(({ icon: Icon, title, body }) => (
             <div key={title} className="text-center md:text-left">
-              <Icon size={28} strokeWidth={1.25} className="mx-auto md:mx-0 text-accent" />
+              <Icon size={28} strokeWidth={1.25} className="mx-auto md:mx-0 text-accent-gold" />
               <h3 className="font-serif text-h3 mt-5">{title}</h3>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-sm md:mx-0 mx-auto">{body}</p>
             </div>
@@ -160,7 +162,9 @@ const Home = () => {
 
       {/* ABOUT TEASER */}
       <section className="container-wide section-space-lg grid md:grid-cols-2 gap-12 md:gap-20 items-center">
-        <img src={aboutPortrait} alt="A calm portrait" loading="lazy" className="w-full h-[480px] md:h-[600px] object-cover" />
+        <div className="product-media">
+          <img src={aboutPortrait} alt="A calm portrait" loading="lazy" className="w-full h-[480px] md:h-[600px] object-cover" />
+        </div>
         <div>
           <p className="eyebrow">Our story</p>
           <h2 className="font-serif text-h2 mt-4">A quiet answer to a loud problem.</h2>

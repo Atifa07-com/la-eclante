@@ -151,7 +151,7 @@ const Routine = () => {
           </div>
         </section>
 
-        <section className="container-narrow section-space">
+        <section className="section-blush container-narrow section-space">
           <ol className="space-y-16 md:space-y-20">
             {selected.products.map((p, i) => (
               <li
@@ -159,12 +159,14 @@ const Routine = () => {
                 className="grid md:grid-cols-12 gap-8 md:gap-12 items-center"
               >
                 <div className={i % 2 === 0 ? "md:col-span-5" : "md:col-span-5 md:order-2"}>
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    loading="lazy"
-                    className="w-full aspect-[4/5] object-cover bg-muted"
-                  />
+                  <div className="product-media">
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      loading="lazy"
+                      className="w-full aspect-[4/5] object-cover bg-muted"
+                    />
+                  </div>
                 </div>
                 <div
                   className={
@@ -295,7 +297,7 @@ const Routine = () => {
                     {formatUSD(total)}
                   </span>
                 </div>
-                <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-accent">
+                <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-accent-gold">
                   Save 15% as a routine
                 </p>
 

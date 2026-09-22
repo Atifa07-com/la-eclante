@@ -30,7 +30,8 @@
     --muted: 33 25% 93%;                /* light beige */
     --muted-foreground: 0 0% 38%;
 
-    --accent: 100 11% 64%;              /* muted sage #9CAF94 */
+    --accent-gold: 35 42% 50%;          /* warm bronze #B58A4A */
+    --accent: var(--accent-gold);
     --accent-foreground: 0 0% 16%;
 
     --gold: 33 30% 70%;                 /* soft gold #C9B8A0 */
@@ -45,6 +46,8 @@
     --border: 33 18% 86%;
     --input: 33 18% 86%;
     --ring: 0 0% 30%;
+    --charcoal: 20 15% 9%;              /* warm near-black #1A1613 */
+    --section-blush: 24 24% 92%;         /* soft blush/taupe */
 
     --radius: 0.75rem;
 
@@ -79,7 +82,8 @@
     --secondary-foreground: 38 33% 95%;
     --muted: 0 0% 14%;
     --muted-foreground: 0 0% 65%;
-    --accent: 100 11% 64%;
+    --accent-gold: 35 42% 50%;
+    --accent: var(--accent-gold);
     --accent-foreground: 0 0% 12%;
     --gold: 33 30% 70%;
     --gold-foreground: 0 0% 12%;
@@ -114,15 +118,22 @@
   .container-wide { @apply mx-auto w-full max-w-[1440px] px-6 md:px-10; }
   .section-space { @apply py-20 md:py-28; }
   .section-space-lg { @apply py-24 md:py-32; }
+  .section-blush { background-color: hsl(var(--section-blush)); }
   .hero-surface { background-image: var(--gradient-warm); }
   .product-card {
-    @apply overflow-hidden rounded-lg bg-background shadow-none transition-all duration-300 ease-smooth;
+    @apply overflow-hidden rounded-lg border border-border bg-card p-2 shadow-soft transition-all duration-300 ease-smooth;
   }
   .product-card:hover {
     @apply -translate-y-1 shadow-soft;
   }
   .eyebrow {
-    @apply text-micro uppercase text-muted-foreground font-medium;
+    @apply text-micro uppercase text-accent-gold font-medium;
+  }
+  .product-media {
+    @apply overflow-hidden rounded-md border border-border bg-card p-2 shadow-soft;
+  }
+  .product-media > img {
+    @apply rounded-sm;
   }
   .hairline { @apply h-px w-full bg-border; }
   .fade-in {

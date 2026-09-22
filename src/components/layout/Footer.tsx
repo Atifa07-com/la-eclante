@@ -48,25 +48,25 @@ export function Footer() {
   };
 
   return (
-    <footer className="mt-32 border-t border-border bg-muted/40">
+    <footer className="mt-32 border-t border-charcoal/80 bg-charcoal text-background">
       <div className="container-wide py-16 grid gap-12 md:grid-cols-12">
         <div className="md:col-span-5">
           <div className="font-serif text-2xl tracking-[0.18em] uppercase">LA-ECLANTE</div>
           <p className="eyebrow mt-2">The sparkle.</p>
-          <p className="mt-6 max-w-md text-sm text-muted-foreground leading-relaxed">
+          <p className="mt-6 max-w-md text-sm text-background/70 leading-relaxed">
             Clinically effective skincare made for acne-prone and sensitive skin. Dermatologist tested,
             fragrance-free, non-comedogenic — always.
           </p>
 
           <form onSubmit={subscribe} className="mt-8 max-w-md">
             <label className="eyebrow block mb-3">Get 10% off your first order</label>
-            <div className="flex border-b border-foreground/40 focus-within:border-foreground transition-colors">
+            <div className="flex border-b border-background/40 focus-within:border-background transition-colors">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="flex-1 bg-transparent py-2 text-sm focus:outline-none placeholder:text-muted-foreground/70"
+                className="flex-1 bg-transparent py-2 text-sm focus:outline-none placeholder:text-background/50"
                 required
               />
               <button
@@ -85,7 +85,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
-              className="p-2 -ml-2 text-foreground/70 hover:text-foreground transition-colors"
+              className="p-2 -ml-2 text-background/70 hover:text-background transition-colors"
             >
               <Instagram size={18} strokeWidth={1.5} />
             </a>
@@ -94,7 +94,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp"
-              className="p-2 text-foreground/70 hover:text-foreground transition-colors"
+              className="p-2 text-background/70 hover:text-background transition-colors"
             >
               <WhatsAppIcon size={18} />
             </a>
@@ -120,8 +120,8 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-border">
-        <div className="container-wide py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+      <div className="border-t border-background/15">
+        <div className="container-wide py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em] text-background/60">
           <div>© {new Date().getFullYear()} LA-ECLANTE</div>
           <div className="flex gap-6">
             <span>Dermatologist tested</span>

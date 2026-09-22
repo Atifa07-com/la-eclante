@@ -32,8 +32,8 @@ export function Header() {
       className={cn(
         "sticky top-0 z-40 w-full transition-all duration-500 ease-smooth border-b",
         scrolled || mobileOpen
-          ? "bg-background/95 backdrop-blur-md border-border"
-          : "bg-background/80 backdrop-blur-sm border-transparent"
+          ? "bg-charcoal/95 text-background backdrop-blur-md border-background/15"
+            : "bg-charcoal text-background backdrop-blur-sm border-background/10"
       )}
     >
       <div className="container-wide flex h-16 md:h-20 items-center justify-between gap-4">
@@ -57,7 +57,7 @@ export function Header() {
               className={({ isActive }) =>
                 cn(
                   "text-[13px] tracking-[0.14em] uppercase transition-colors duration-300",
-                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  isActive ? "text-background" : "text-background/70 hover:text-background"
                 )
               }
             >
@@ -86,7 +86,7 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-background">
+        <div className="md:hidden border-t border-background/15 bg-charcoal text-background">
           <nav className="container-wide py-4 flex flex-col gap-3">
             {links.map((l) => (
               <RouterNav
@@ -95,7 +95,7 @@ export function Header() {
                 className={({ isActive }) =>
                   cn(
                     "py-2 text-sm tracking-[0.14em] uppercase",
-                    isActive ? "text-foreground" : "text-muted-foreground"
+                    isActive ? "text-background" : "text-background/70"
                   )
                 }
               >

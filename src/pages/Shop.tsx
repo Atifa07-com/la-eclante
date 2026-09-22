@@ -82,7 +82,7 @@ const Shop = () => {
               const img = p.node.images.edges[0]?.node;
               return (
                 <Link key={p.node.id} to={`/products/${p.node.handle}`} className="product-card group">
-                  <div className="aspect-[4/5] bg-background overflow-hidden">
+                  <div className="aspect-[4/5] bg-background overflow-hidden rounded-md">
                     {img && (
                       <img
                         src={img.url}
