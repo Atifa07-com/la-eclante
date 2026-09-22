@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const About = () => (
   <div>
-    <section className="bg-warm">
+    <section className="hero-surface">
       <div className="container-narrow py-20 md:py-32 text-center">
         <p className="eyebrow">Our story</p>
         <h1 className="font-serif text-5xl md:text-7xl mt-4 leading-[1.02]">

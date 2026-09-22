@@ -133,7 +133,7 @@ const Routine = () => {
     const bundle = Math.round(total * 0.85 * 100) / 100;
     return (
       <div>
-        <section className="bg-warm">
+        <section className="hero-surface">
           <div className="container-wide pt-12 md:pt-16 pb-10">
             <button
               onClick={() => setSelected(null)}
@@ -220,7 +220,7 @@ const Routine = () => {
 
   return (
     <div>
-      <section className="bg-warm">
+      <section className="hero-surface">
         <div className="container-wide grid md:grid-cols-12 gap-10 md:gap-16 items-center py-20 md:py-28">
           <div className="md:col-span-6">
             <p className="eyebrow">Shop your routine</p>

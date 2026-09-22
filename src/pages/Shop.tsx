@@ -33,8 +33,8 @@ const Shop = () => {
   });
 
   return (
-    <div className="bg-warm">
-      <header className="container-wide pt-16 md:pt-24 pb-10">
+    <div>
+      <header className="hero-surface container-wide pt-16 md:pt-24 pb-10">
         <p className="eyebrow">The shop</p>
         <h1 className="font-serif text-5xl md:text-7xl mt-4 leading-tight">Considered formulas.</h1>
         <p className="mt-5 max-w-xl text-muted-foreground">
@@ -81,7 +81,7 @@ const Shop = () => {
             {sorted.map((p) => {
               const img = p.node.images.edges[0]?.node;
               return (
-                <Link key={p.node.id} to={`/products/${p.node.handle}`} className="group">
+                <Link key={p.node.id} to={`/products/${p.node.handle}`} className="product-card group">
                   <div className="aspect-[4/5] bg-background overflow-hidden">
                     {img && (
                       <img
