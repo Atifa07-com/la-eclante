@@ -55,7 +55,7 @@ const About = () => (
     <section className="container-narrow py-24 md:py-32 text-center">
       <h2 className="font-serif text-4xl md:text-5xl leading-tight">Find your routine.</h2>
       <p className="mt-4 text-muted-foreground">Take our two-minute skin quiz for a personalised recommendation.</p>
-      <Button asChild size="lg" className="mt-8 rounded-none h-12 px-10 tracking-[0.16em] uppercase text-[12px]">
+      <Button asChild variant="primary" size="lg" className="mt-8">
         <Link to="/quiz">Take the quiz</Link>
       </Button>
     </section>

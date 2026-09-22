@@ -24,7 +24,8 @@ export default function AccountPage() {
             </p>
             <Button
               asChild
-              className="mt-6 rounded-none h-11 px-8 tracking-[0.14em] uppercase text-[12px]"
+              variant="primary"
+              className="mt-6"
             >
               <Link to="/shop">Continue shopping</Link>
             </Button>

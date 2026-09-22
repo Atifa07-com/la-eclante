@@ -38,10 +38,10 @@ const Home = () => {
               clarify, and protect the barrier you depend on.
             </p>
             <div className="mt-9 flex flex-col sm:flex-row gap-3">
-              <Button asChild size="lg" className="rounded-none h-12 px-8 tracking-[0.16em] uppercase text-[12px]">
+              <Button asChild variant="primary" size="lg">
                 <Link to="/shop">Shop the Routine</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="rounded-none h-12 px-8 tracking-[0.16em] uppercase text-[12px] border-foreground/30">
+              <Button asChild variant="secondary" size="lg">
                 <Link to="/quiz">Take the Skin Quiz</Link>
               </Button>
             </div>
@@ -179,7 +179,7 @@ const Home = () => {
         <div className="container-narrow">
           <p className="eyebrow text-background/60">Begin</p>
           <h2 className="font-serif text-h2 mt-4">Your clearest skin starts with the right routine.</h2>
-          <Button asChild size="lg" className="mt-10 rounded-none h-12 px-10 tracking-[0.16em] uppercase text-[12px] bg-background text-foreground hover:bg-background/90">
+          <Button asChild variant="primary" size="lg" className="mt-10 bg-background text-foreground hover:bg-background/90">
             <Link to="/quiz">Take the skin quiz</Link>
           </Button>
         </div>

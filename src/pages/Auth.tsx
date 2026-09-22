@@ -14,7 +14,8 @@ export default function AuthPage() {
 
         <Button
           asChild
-          className="mt-10 w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]"
+          variant="primary"
+          className="mt-10 w-full"
         >
           <a href="/account">Continue</a>
         </Button>

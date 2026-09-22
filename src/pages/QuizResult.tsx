@@ -88,7 +88,7 @@ export default function QuizResult() {
       <Button
         asChild
         size="lg"
-        className="rounded-none h-12 px-10 tracking-[0.16em] uppercase text-[12px]"
+        variant="primary"
       >
         <Link to={meta.route}>{copy.cta} →</Link>
       </Button>

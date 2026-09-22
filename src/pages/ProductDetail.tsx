@@ -142,7 +142,8 @@ const ProductDetail = () => {
             onClick={handleAdd}
             disabled={!variant?.availableForSale || isLoading}
             size="lg"
-            className="mt-6 w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]"
+            variant="primary"
+            className="mt-6 w-full"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -179,7 +180,8 @@ const ProductDetail = () => {
         <Button
           onClick={handleAdd}
           disabled={!variant?.availableForSale || isLoading}
-          className="w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]"
+          variant="primary"
+          className="w-full"
         >
           {!variant?.availableForSale
             ? "Sold out"

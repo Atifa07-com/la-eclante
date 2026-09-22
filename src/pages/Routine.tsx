@@ -204,10 +204,7 @@ const Routine = () => {
                 <p className="font-serif text-4xl md:text-5xl mt-1">
                   {formatUSD(bundle)}
                 </p>
-                <Button
-                  size="lg"
-                  className="mt-6 rounded-none h-12 px-8 tracking-[0.16em] uppercase text-[12px]"
-                >
+                  <Button size="lg" variant="primary" className="mt-6">
                   Add Full Routine to Cart
                 </Button>
               </div>
@@ -234,7 +231,8 @@ const Routine = () => {
             <Button
               asChild
               size="lg"
-              className="mt-8 rounded-none h-12 px-8 tracking-[0.16em] uppercase text-[12px]"
+              variant="primary"
+              className="mt-8"
             >
               <Link to="/quiz">Take the Skin Quiz</Link>
             </Button>
