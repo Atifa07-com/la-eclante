@@ -121,7 +121,7 @@
   .section-blush { background-color: hsl(var(--section-blush)); }
   .hero-surface { background-image: var(--gradient-warm); }
   .product-card {
-    @apply overflow-hidden rounded-lg border border-border bg-card p-2 shadow-soft transition-all duration-300 ease-smooth;
+    @apply overflow-hidden rounded-lg border border-border bg-card p-[0.2rem] shadow-soft transition-all duration-300 ease-smooth;
   }
   .product-card:hover {
     @apply -translate-y-1 shadow-soft;
