@@ -15,6 +15,14 @@ export default {
         serif: ['Cormorant Garamond', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
+      fontSize: {
+        hero: ["4.5rem", { lineHeight: "0.98", letterSpacing: "-0.02em" }],
+        h1: ["3.75rem", { lineHeight: "1.02", letterSpacing: "-0.015em" }],
+        h2: ["3rem", { lineHeight: "1.08", letterSpacing: "-0.01em" }],
+        h3: ["1.5rem", { lineHeight: "1.2" }],
+        body: ["1rem", { lineHeight: "1.75" }],
+        micro: ["0.6875rem", { lineHeight: "1.4", letterSpacing: "0.2em" }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
