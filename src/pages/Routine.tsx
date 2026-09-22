@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Droplet, FlaskConical, Sparkles } from "lucide-react";
-import routineLineup from "@/assets/routine-lineup.jpg";
-import productCleanser from "@/assets/product-cleanser.jpg";
-import productSerum from "@/assets/product-serum.jpg";
-import productMoisturizer from "@/assets/product-moisturizer.jpg";
-import productTreatment from "@/assets/product-treatment.jpg";
+import routineLineup from "@/assets/routine-lineup.jfif";
+import productCleanser from "@/assets/anti-acne-facewash.jfif";
+import productSerum from "@/assets/anti-acne-serum.jfif";
+import productMoisturizer from "@/assets/korean-glass-skin-moisturizer.jfif";
+import productTreatment from "@/assets/advanced-anti-acne-serum.jfif";
 
 type RoutineProduct = {
   name: string;
@@ -133,7 +133,7 @@ const Routine = () => {
     const bundle = Math.round(total * 0.85 * 100) / 100;
     return (
       <div>
-        <section className="bg-warm">
+        <section className="hero-surface">
           <div className="container-wide pt-12 md:pt-16 pb-10">
             <button
               onClick={() => setSelected(null)}
@@ -151,7 +151,7 @@ const Routine = () => {
           </div>
         </section>
 
-        <section className="container-narrow py-16 md:py-24">
+        <section className="section-blush container-narrow section-space">
           <ol className="space-y-16 md:space-y-20">
             {selected.products.map((p, i) => (
               <li
@@ -159,12 +159,14 @@ const Routine = () => {
                 className="grid md:grid-cols-12 gap-8 md:gap-12 items-center"
               >
                 <div className={i % 2 === 0 ? "md:col-span-5" : "md:col-span-5 md:order-2"}>
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    loading="lazy"
-                    className="w-full aspect-[4/5] object-cover bg-muted"
-                  />
+                  <div className="product-media">
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      loading="lazy"
+                      className="w-full aspect-[4/5] object-cover bg-muted"
+                    />
+                  </div>
                 </div>
                 <div
                   className={
@@ -204,10 +206,7 @@ const Routine = () => {
                 <p className="font-serif text-4xl md:text-5xl mt-1">
                   {formatUSD(bundle)}
                 </p>
-                <Button
-                  size="lg"
-                  className="mt-6 rounded-none h-12 px-8 tracking-[0.16em] uppercase text-[12px]"
-                >
+                  <Button size="lg" variant="primary" className="mt-6">
                   Add Full Routine to Cart
                 </Button>
               </div>
@@ -220,8 +219,8 @@ const Routine = () => {
 
   return (
     <div>
-      <section className="bg-warm">
-        <div className="container-wide grid md:grid-cols-12 gap-10 md:gap-16 items-center py-20 md:py-28">
+      <section className="hero-surface">
+        <div className="container-wide section-space grid md:grid-cols-12 gap-10 md:gap-16 items-center">
           <div className="md:col-span-6">
             <p className="eyebrow">Shop your routine</p>
             <h1 className="font-serif text-5xl md:text-7xl mt-4 leading-[1.02]">
@@ -234,7 +233,8 @@ const Routine = () => {
             <Button
               asChild
               size="lg"
-              className="mt-8 rounded-none h-12 px-8 tracking-[0.16em] uppercase text-[12px]"
+              variant="primary"
+              className="mt-8"
             >
               <Link to="/quiz">Take the Skin Quiz</Link>
             </Button>
@@ -250,7 +250,7 @@ const Routine = () => {
         </div>
       </section>
 
-      <section className="container-wide py-20 md:py-28">
+      <section className="container-wide section-space">
         <div className="text-center mb-14 md:mb-20">
           <p className="eyebrow">Three curated systems</p>
           <h2 className="font-serif text-4xl md:text-5xl mt-3">
@@ -297,7 +297,7 @@ const Routine = () => {
                     {formatUSD(total)}
                   </span>
                 </div>
-                <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-accent">
+                <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-accent-gold">
                   Save 15% as a routine
                 </p>
 

@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
+import typography from "@tailwindcss/typography";
 
 export default {
   darkMode: ["class"],
@@ -14,6 +16,14 @@ export default {
       fontFamily: {
         serif: ['Cormorant Garamond', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        hero: ["4.5rem", { lineHeight: "0.98", letterSpacing: "-0.02em" }],
+        h1: ["3.75rem", { lineHeight: "1.02", letterSpacing: "-0.015em" }],
+        h2: ["3rem", { lineHeight: "1.08", letterSpacing: "-0.01em" }],
+        h3: ["1.5rem", { lineHeight: "1.2" }],
+        body: ["1rem", { lineHeight: "1.75" }],
+        micro: ["0.6875rem", { lineHeight: "1.4", letterSpacing: "0.2em" }],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -41,6 +51,12 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        "accent-gold": {
+          DEFAULT: "hsl(var(--accent-gold))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        charcoal: "hsl(var(--charcoal))",
+        blush: "hsl(var(--section-blush))",
         gold: {
           DEFAULT: "hsl(var(--gold))",
           foreground: "hsl(var(--gold-foreground))",
@@ -96,5 +112,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [tailwindcssAnimate, typography],
 } satisfies Config;

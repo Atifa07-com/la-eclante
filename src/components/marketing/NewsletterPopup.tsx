@@ -67,7 +67,7 @@ export function NewsletterPopup() {
             placeholder="your@email.com"
             className="w-full h-12 px-4 border border-border bg-transparent text-sm focus:border-foreground focus:outline-none"
           />
-          <Button type="submit" disabled={loading} className="w-full h-12 rounded-none">
+          <Button type="submit" variant="primary" disabled={loading} className="w-full">
             {loading ? "..." : "Get my 10% off"}
           </Button>
         </form>

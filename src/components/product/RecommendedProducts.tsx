@@ -38,7 +38,7 @@ export function RecommendedProducts({
   if (products.length === 0) return null;
 
   return (
-    <section className="container-wide border-t border-border py-16 md:py-24">
+    <section className="container-wide section-space border-t border-border">
       <div className="flex items-end justify-between gap-4 mb-8">
         <h2 className="font-serif text-3xl md:text-4xl">{title}</h2>
       </div>
@@ -52,8 +52,8 @@ export function RecommendedProducts({
                 key={p.node.id}
                 className="pl-5 basis-1/2 md:basis-1/3 lg:basis-1/4"
               >
-                <Link to={`/products/${p.node.handle}`} className="group block">
-                  <div className="aspect-[4/5] bg-background overflow-hidden">
+                <Link to={`/products/${p.node.handle}`} className="product-card group block">
+                  <div className="aspect-[4/5] bg-background overflow-hidden rounded-md">
                     {img && (
                       <img
                         src={img.url}
@@ -63,7 +63,7 @@ export function RecommendedProducts({
                       />
                     )}
                   </div>
-                  <div className="mt-4">
+                  <div className="px-2 pb-2 pt-3">
                     {p.node.productType && <p className="eyebrow">{p.node.productType}</p>}
                     <h3 className="font-serif text-lg md:text-xl mt-1.5">{p.node.title}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">

@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 
 const About = () => (
   <div>
-    <section className="bg-warm">
-      <div className="container-narrow py-20 md:py-32 text-center">
+    <section className="hero-surface">
+      <div className="container-narrow section-space text-center">
         <p className="eyebrow">Our story</p>
         <h1 className="font-serif text-5xl md:text-7xl mt-4 leading-[1.02]">
           Made for the skin we never stopped fighting for.
@@ -13,7 +13,7 @@ const About = () => (
       </div>
     </section>
 
-    <section className="container-wide py-24 md:py-32 grid md:grid-cols-2 gap-12 md:gap-20 items-start">
+    <section className="section-blush container-wide section-space-lg grid md:grid-cols-2 gap-12 md:gap-20 items-start">
       <img src={aboutPortrait} alt="Founder portrait" className="w-full h-[500px] md:h-[680px] object-cover" loading="lazy" />
       <div className="md:pt-8">
         <p className="eyebrow">A note from the founder</p>
@@ -35,7 +35,7 @@ const About = () => (
       </div>
     </section>
 
-    <section className="bg-muted/40 py-24 md:py-32">
+    <section className="container-wide section-space-lg">
       <div className="container-narrow">
         <div className="grid md:grid-cols-3 gap-10">
           {[
@@ -52,10 +52,10 @@ const About = () => (
       </div>
     </section>
 
-    <section className="container-narrow py-24 md:py-32 text-center">
+    <section className="container-narrow section-space-lg text-center">
       <h2 className="font-serif text-4xl md:text-5xl leading-tight">Find your routine.</h2>
       <p className="mt-4 text-muted-foreground">Take our two-minute skin quiz for a personalised recommendation.</p>
-      <Button asChild size="lg" className="mt-8 rounded-none h-12 px-10 tracking-[0.16em] uppercase text-[12px]">
+      <Button asChild variant="primary" size="lg" className="mt-8">
         <Link to="/quiz">Take the quiz</Link>
       </Button>
     </section>

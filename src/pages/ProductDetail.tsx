@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { fetchProductByHandle, formatMoney, type ShopifyProductNode } from "@/lib/shopify";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2 } from "lucide-react";
+import { BadgeCheck, Check, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { RecommendedProducts } from "@/components/product/RecommendedProducts";
 import { toast } from "sonner";
@@ -42,12 +42,12 @@ const ProductDetail = () => {
   }, [slug, nav]);
 
   if (loading) {
-    return <div className="container-narrow py-32 text-center text-muted-foreground">Loading…</div>;
+    return <div className="container-narrow section-space-lg text-center text-muted-foreground">Loading…</div>;
   }
 
   if (error) {
     return (
-      <div className="container-narrow py-24 md:py-32 text-center">
+      <div className="container-narrow section-space-lg text-center">
         <Link to="/shop" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
           ← Back to shop
         </Link>
@@ -93,11 +93,13 @@ const ProductDetail = () => {
       <section className="container-wide pb-24 grid md:grid-cols-12 gap-12 md:gap-16">
         <div className="md:col-span-7">
           {img && (
-            <img
-              src={img.url}
-              alt={img.altText ?? p.title}
-              className="w-full aspect-[4/5] object-cover bg-muted"
-            />
+            <div className="product-media">
+              <img
+                src={img.url}
+                alt={img.altText ?? p.title}
+                className="w-full aspect-[4/5] object-cover bg-muted"
+              />
+            </div>
           )}
         </div>
 
@@ -142,7 +144,8 @@ const ProductDetail = () => {
             onClick={handleAdd}
             disabled={!variant?.availableForSale || isLoading}
             size="lg"
-            className="mt-6 w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]"
+            variant="primary"
+            className="mt-6 w-full"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -156,18 +159,24 @@ const ProductDetail = () => {
           {benefits.length > 0 && (
             <div className="mt-8 space-y-2">
               {benefits.map((b) => (
-                <div key={b} className="flex items-center gap-3 text-sm">
-                  <Check size={14} className="text-accent" />
+                <div key={b} className="inline-flex items-center gap-2 rounded-full border border-accent-gold/35 bg-accent-gold/10 px-3 py-1.5 text-sm text-accent-gold">
+                  <Check size={14} />
                   <span>{b}</span>
                 </div>
               ))}
             </div>
           )}
 
-          <div className="mt-10 space-y-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            <p>Dermatologist tested</p>
-            <p>Non-comedogenic</p>
-            <p>Fragrance-free</p>
+          <div className="mt-10 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-2 text-micro uppercase text-muted-foreground">
+              <BadgeCheck size={14} className="text-accent-gold" /> Dermatologist tested
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-2 text-micro uppercase text-muted-foreground">
+              <ShieldCheck size={14} className="text-accent-gold" /> Non-comedogenic
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-2 text-micro uppercase text-muted-foreground">
+              <Sparkles size={14} className="text-accent-gold" /> Fragrance-free
+            </span>
           </div>
         </div>
       </section>
@@ -179,7 +188,8 @@ const ProductDetail = () => {
         <Button
           onClick={handleAdd}
           disabled={!variant?.availableForSale || isLoading}
-          className="w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]"
+          variant="primary"
+          className="w-full"
         >
           {!variant?.availableForSale
             ? "Sold out"

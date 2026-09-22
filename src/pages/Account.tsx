@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function AccountPage() {
   return (
-    <section className="container-wide py-16 md:py-24">
+    <section className="container-wide section-space">
       <div>
         <p className="eyebrow">Your account</p>
         <h1 className="font-serif text-4xl md:text-5xl mt-3">Hello.</h1>
@@ -24,7 +24,8 @@ export default function AccountPage() {
             </p>
             <Button
               asChild
-              className="mt-6 rounded-none h-11 px-8 tracking-[0.14em] uppercase text-[12px]"
+              variant="primary"
+              className="mt-6"
             >
               <Link to="/shop">Continue shopping</Link>
             </Button>

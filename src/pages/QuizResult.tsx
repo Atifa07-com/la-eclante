@@ -49,7 +49,7 @@ export default function QuizResult() {
   const copy = COPY[severityParam];
 
   return (
-    <main className="container-narrow max-w-3xl py-16 md:py-24">
+    <main className="container-narrow section-space max-w-3xl">
       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs uppercase tracking-[0.2em] mb-6">
         <Sparkles className="w-3.5 h-3.5" /> Your personalized result
       </div>
@@ -88,7 +88,7 @@ export default function QuizResult() {
       <Button
         asChild
         size="lg"
-        className="rounded-none h-12 px-10 tracking-[0.16em] uppercase text-[12px]"
+        variant="primary"
       >
         <Link to={meta.route}>{copy.cta} →</Link>
       </Button>

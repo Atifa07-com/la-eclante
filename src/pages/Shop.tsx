@@ -33,8 +33,8 @@ const Shop = () => {
   });
 
   return (
-    <div className="bg-warm">
-      <header className="container-wide pt-16 md:pt-24 pb-10">
+    <div>
+      <header className="hero-surface container-wide pt-16 md:pt-24 pb-10">
         <p className="eyebrow">The shop</p>
         <h1 className="font-serif text-5xl md:text-7xl mt-4 leading-tight">Considered formulas.</h1>
         <p className="mt-5 max-w-xl text-muted-foreground">
@@ -59,7 +59,7 @@ const Shop = () => {
 
       <div className="hairline container-wide" />
 
-      <section className="container-wide py-12 md:py-16">
+      <section className="container-wide section-space">
         {loading ? (
           <p className="text-center text-muted-foreground py-20">Loading…</p>
         ) : error ? (
@@ -81,8 +81,8 @@ const Shop = () => {
             {sorted.map((p) => {
               const img = p.node.images.edges[0]?.node;
               return (
-                <Link key={p.node.id} to={`/products/${p.node.handle}`} className="group">
-                  <div className="aspect-[4/5] bg-background overflow-hidden">
+                <Link key={p.node.id} to={`/products/${p.node.handle}`} className="product-card group">
+                  <div className="aspect-[4/5] bg-background overflow-hidden rounded-md">
                     {img && (
                       <img
                         src={img.url}
@@ -92,7 +92,7 @@ const Shop = () => {
                       />
                     )}
                   </div>
-                  <div className="mt-5">
+                  <div className="px-4 pb-5 pt-4">
                     {p.node.productType && <p className="eyebrow">{p.node.productType}</p>}
                     <h3 className="font-serif text-xl md:text-2xl mt-2">{p.node.title}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">

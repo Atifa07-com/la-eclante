@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function AuthPage() {
   return (
-    <section className="container-narrow py-20 md:py-28">
+    <section className="container-narrow section-space">
       <div className="max-w-md mx-auto text-center">
         <p className="eyebrow">Account</p>
         <h1 className="font-serif text-4xl md:text-5xl mt-3">Sign in.</h1>
@@ -14,7 +14,8 @@ export default function AuthPage() {
 
         <Button
           asChild
-          className="mt-10 w-full h-12 rounded-none tracking-[0.16em] uppercase text-[12px]"
+          variant="primary"
+          className="mt-10 w-full"
         >
           <a href="/account">Continue</a>
         </Button>

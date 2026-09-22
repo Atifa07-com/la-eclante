@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const ComingSoon = ({ title, blurb }: { title: string; blurb: string }) => (
-  <section className="container-narrow py-32 md:py-40 text-center">
+  <section className="container-narrow section-space-lg text-center">
     <p className="eyebrow">Coming next</p>
     <h1 className="font-serif text-5xl md:text-6xl mt-4 leading-tight">{title}</h1>
     <p className="mt-5 text-muted-foreground max-w-md mx-auto">{blurb}</p>
-    <Button asChild size="lg" className="mt-8 rounded-none h-12 px-10 tracking-[0.16em] uppercase text-[12px]">
+    <Button asChild variant="primary" size="lg" className="mt-8">
       <Link to="/shop">Shop the routine</Link>
     </Button>
   </section>
