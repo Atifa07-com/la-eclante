@@ -7,7 +7,6 @@ import { toast } from "sonner";
 
 const emailSchema = z.string().trim().email().max(255);
 
-// TODO: replace with your real Instagram URL and WhatsApp number.
 const INSTAGRAM_URL = "https://instagram.com/laeclante";
 const WHATSAPP_URL = "https://wa.me/923355865864";
 

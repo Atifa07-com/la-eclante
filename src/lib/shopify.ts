@@ -8,6 +8,10 @@ export const SHOPIFY_STOREFRONT_TOKEN =
   import.meta.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN || "";
 export const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
+export function getShopifyAccountUrl(path = "/account"): string {
+  return `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}${path}`;
+}
+
 /** Abort any Shopify request that takes longer than this (ms). */
 export const SHOPIFY_REQUEST_TIMEOUT_MS = 4000;
 

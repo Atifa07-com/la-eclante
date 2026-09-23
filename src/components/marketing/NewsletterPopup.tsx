@@ -71,9 +71,6 @@ export function NewsletterPopup() {
             {loading ? "..." : "Get my 10% off"}
           </Button>
         </form>
-        <p className="mt-4 text-[11px] uppercase tracking-[0.16em] text-muted-foreground text-center">
-          No spam. Unsubscribe anytime.
-        </p>
       </div>
     </div>
   );
