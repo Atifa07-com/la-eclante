@@ -33,8 +33,8 @@ type RoutineDef = {
 
 const COMMITMENTS = [
   { id: "1-month", label: "1 MONTH", discount: 15, suffix: "" },
-  { id: "3-months", label: "3 MONTHS", discount: 20, suffix: " / month" },
-  { id: "6-months", label: "6 MONTHS", discount: 25, suffix: " / month" },
+  { id: "3-months", label: "3 MONTHS", discount: 20, suffix: " /m" },
+  { id: "6-months", label: "6 MONTHS", discount: 25, suffix: " /m" },
 ] as const;
 
 type CommitmentId = (typeof COMMITMENTS)[number]["id"];
@@ -387,15 +387,15 @@ const Routine = () => {
                   {r.description}
                 </p>
 
-                <div className={`my-8 flex items-start justify-center gap-3 sm:gap-6 py-6 border-y ${r.luxury ? "border-accent-gold/30" : "border-border"}`}>
+                <div className={`my-8 grid grid-cols-4 items-start gap-2 sm:gap-3 py-6 border-y ${r.luxury ? "border-accent-gold/30" : "border-border"}`}>
                   {r.products.map((p) => {
                     const Icon = ICONS[p.type];
                     return (
-                      <div key={p.name} className="flex flex-col items-center text-center flex-1 min-w-0">
+                      <div key={p.name} className="flex min-w-0 flex-col items-center text-center">
                         <div className={`h-12 w-12 rounded-full flex items-center justify-center ${r.luxury ? "bg-accent-gold text-[#211b12]" : "bg-secondary text-foreground"}`}>
                           <Icon className="h-5 w-5" />
                         </div>
-                        <p className={`mt-3 text-[10px] uppercase tracking-[0.14em] leading-tight ${r.luxury ? "text-[#d9cda9]" : "text-muted-foreground"}`}>
+                        <p className={`mt-3 min-h-[3.5rem] w-full break-words text-[9px] uppercase tracking-[0.1em] leading-tight [overflow-wrap:anywhere] ${r.luxury ? "text-[#d9cda9]" : "text-muted-foreground"}`}>
                           {p.name.replace(/\(.*\)/, "").trim().replace("Korean Glass Skin ", "").replace("Advanced Acne Treatment ", "Advanced ")}
                         </p>
                       </div>
@@ -410,7 +410,7 @@ const Routine = () => {
                   </span>
                 </div>
                 <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-accent-gold">
-                  Save {selectedOption.discount}%{commitment === "6-months" ? " + skin credit" : ""}
+                  Save {selectedOption.discount}%{commitment === "6-months" ? " + la eclante credit" : ""}
                 </p>
 
                 <div className={`mt-6 flex gap-1 ${r.luxury ? "text-[#f8edcf]" : ""}`} role="group" aria-label={`${r.name} commitment`}>
