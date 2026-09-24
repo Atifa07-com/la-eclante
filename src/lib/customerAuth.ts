@@ -8,6 +8,7 @@ const CODE_VERIFIER_KEY = "la-eclante.customer-code-verifier";
 const STATE_KEY = "la-eclante.customer-auth-state";
 const NONCE_KEY = "la-eclante.customer-auth-nonce";
 const TOKENS_KEY = "la-eclante.customer-tokens";
+const CUSTOMER_INITIAL_KEY = "la-eclante.customer-initial";
 
 export interface CustomerAuthConfig {
   authorization_endpoint: string;
@@ -28,6 +29,16 @@ export interface CustomerOrder {
   number: number;
   processedAt: string;
   totalPrice: { amount: string; currencyCode: string };
+  fulfillmentStatus: string;
+  lineItems: { nodes: CustomerLineItem[] };
+}
+
+export interface CustomerLineItem {
+  id: string;
+  name: string;
+  title: string;
+  quantity: number;
+  image: { url: string; altText: string | null } | null;
 }
 
 export interface CustomerProfile {
@@ -51,7 +62,17 @@ const CUSTOMER_QUERY = `
       lastName
       emailAddress { emailAddress }
       orders(first: 10, reverse: true) {
-        nodes { id name number processedAt totalPrice { amount currencyCode } }
+        nodes {
+          id
+          name
+          number
+          processedAt
+          fulfillmentStatus
+          totalPrice { amount currencyCode }
+          lineItems(first: 10) {
+            nodes { id name title quantity image { url altText } }
+          }
+        }
       }
     }
   }
@@ -136,7 +157,8 @@ export async function exchangeCustomerCode(code: string, returnedState: string |
   if (!response.ok) throw new Error("Shopify could not complete sign in. The code may have expired.");
   const tokenResponse = await response.json() as TokenResponse;
   if (!tokenResponse.access_token || !tokenResponse.expires_in) throw new Error("Shopify returned an incomplete sign-in response.");
-  setCustomerTokens({ accessToken: tokenResponse.access_token, refreshToken: tokenResponse.refresh_token, idToken: tokenResponse.id_token, expiresAt: Date.now() + tokenResponse.expires_in * 1000 });
+  const idTokenClaims = tokenResponse.id_token ? readIdTokenClaims(tokenResponse.id_token) : null;
+  setCustomerTokens({ accessToken: tokenResponse.access_token, refreshToken: tokenResponse.refresh_token, idToken: tokenResponse.id_token, expiresAt: Date.now() + tokenResponse.expires_in * 1000 }, idTokenClaims?.given_name || idTokenClaims?.name);
 }
 
 export function getCustomerTokens(): CustomerApiTokens | null {
@@ -146,14 +168,36 @@ export function getCustomerTokens(): CustomerApiTokens | null {
   } catch { return null; }
 }
 
-export function setCustomerTokens(tokens: CustomerApiTokens): void {
+export function setCustomerTokens(tokens: CustomerApiTokens, customerName?: string): void {
   // This frontend has no server endpoint for an httpOnly cookie. sessionStorage
   // limits token persistence to this tab, but it remains readable by JavaScript.
   requireBrowserStorage().setItem(TOKENS_KEY, JSON.stringify(tokens));
+  const initial = customerName?.trim().charAt(0).toUpperCase();
+  if (initial) requireBrowserStorage().setItem(CUSTOMER_INITIAL_KEY, initial);
+}
+
+function readIdTokenClaims(token: string): { given_name?: string; name?: string } | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as { given_name?: string; name?: string };
+  } catch { return null; }
+}
+
+export function getCustomerInitial(): string | null {
+  try { return requireBrowserStorage().getItem(CUSTOMER_INITIAL_KEY); } catch { return null; }
+}
+
+export function cacheCustomerInitial(firstName: string | null): void {
+  const initial = firstName?.trim().charAt(0).toUpperCase();
+  if (initial) requireBrowserStorage().setItem(CUSTOMER_INITIAL_KEY, initial);
 }
 
 export function clearCustomerTokens(): void {
-  try { requireBrowserStorage().removeItem(TOKENS_KEY); } catch { /* browser storage unavailable */ }
+  try {
+    requireBrowserStorage().removeItem(TOKENS_KEY);
+    requireBrowserStorage().removeItem(CUSTOMER_INITIAL_KEY);
+  } catch { /* browser storage unavailable */ }
 }
 
 async function refreshWithToken(tokens: CustomerApiTokens): Promise<string> {
