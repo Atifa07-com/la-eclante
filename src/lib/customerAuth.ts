@@ -33,6 +33,34 @@ export interface CustomerOrder {
   lineItems: { nodes: CustomerLineItem[] };
 }
 
+export interface CustomerAddress {
+  firstName: string | null;
+  lastName: string | null;
+  address1: string | null;
+  address2: string | null;
+  city: string | null;
+  province: string | null;
+  country: string | null;
+  zip: string | null;
+}
+
+export interface CustomerTrackingInformation {
+  company: string | null;
+  number: string | null;
+  url: string | null;
+}
+
+export interface CustomerOrderDetail extends CustomerOrder {
+  createdAt: string;
+  shippingAddress: CustomerAddress | null;
+  fulfillments: {
+    nodes: Array<{
+      status: string | null;
+      trackingInformation: CustomerTrackingInformation[];
+    }>;
+  };
+}
+
 export interface CustomerLineItem {
   id: string;
   name: string;
@@ -229,6 +257,48 @@ export async function fetchCustomerProfile(): Promise<CustomerProfile> {
   const result = await apiResponse.json() as { data?: { customer: CustomerProfile }; errors?: Array<{ message: string }> };
   if (result.errors?.length || !result.data?.customer) throw new Error(result.errors?.[0]?.message || "Customer account data could not be loaded.");
   return result.data.customer;
+}
+
+export async function fetchCustomerOrder(orderId: string): Promise<CustomerOrderDetail | null> {
+  const accessToken = await getValidCustomerAccessToken();
+  if (!SHOPIFY_STORE_PERMANENT_DOMAIN) throw new Error("The Shopify storefront domain is not configured.");
+  const discoveryResponse = await fetch(`https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/.well-known/customer-account-api`);
+  if (!discoveryResponse.ok) throw new Error("Customer account data is temporarily unavailable.");
+  const apiConfig = await discoveryResponse.json() as { graphql_api?: string };
+  if (!apiConfig.graphql_api) throw new Error("Shopify returned an incomplete account API configuration.");
+  const query = `
+    query CustomerOrder($id: ID!) {
+      order(id: $id) {
+        id
+        name
+        number
+        createdAt
+        processedAt
+        fulfillmentStatus
+        totalPrice { amount currencyCode }
+        shippingAddress { firstName lastName address1 address2 city province country zip }
+        lineItems(first: 100) {
+          nodes { id name title quantity image { url altText } price { amount currencyCode } }
+        }
+        fulfillments(first: 10) {
+          nodes {
+            status
+            trackingInformation { company number url }
+          }
+        }
+      }
+    }
+  `;
+  const response = await fetch(apiConfig.graphql_api, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: accessToken },
+    body: JSON.stringify({ query, variables: { id: orderId } }),
+  });
+  if (!response.ok) throw new Error("Customer account data is temporarily unavailable.");
+  const result = await response.json() as { data?: { order: CustomerOrderDetail | null }; errors?: Array<{ message: string }> };
+  if (result.errors?.length && !result.data?.order) return null;
+  if (!result.data?.order) return null;
+  return result.data.order;
 }
 
 export async function logoutCustomer(): Promise<void> {
