@@ -8,6 +8,7 @@ const CODE_VERIFIER_KEY = "la-eclante.customer-code-verifier";
 const STATE_KEY = "la-eclante.customer-auth-state";
 const NONCE_KEY = "la-eclante.customer-auth-nonce";
 const TOKENS_KEY = "la-eclante.customer-tokens";
+const CUSTOMER_INITIAL_KEY = "la-eclante.customer-initial";
 
 export interface CustomerAuthConfig {
   authorization_endpoint: string;
@@ -28,6 +29,44 @@ export interface CustomerOrder {
   number: number;
   processedAt: string;
   totalPrice: { amount: string; currencyCode: string };
+  fulfillmentStatus: string;
+  lineItems: { nodes: CustomerLineItem[] };
+}
+
+export interface CustomerAddress {
+  firstName: string | null;
+  lastName: string | null;
+  address1: string | null;
+  address2: string | null;
+  city: string | null;
+  province: string | null;
+  country: string | null;
+  zip: string | null;
+}
+
+export interface CustomerTrackingInformation {
+  company: string | null;
+  number: string | null;
+  url: string | null;
+}
+
+export interface CustomerOrderDetail extends CustomerOrder {
+  createdAt: string;
+  shippingAddress: CustomerAddress | null;
+  fulfillments: {
+    nodes: Array<{
+      status: string | null;
+      trackingInformation: CustomerTrackingInformation[];
+    }>;
+  };
+}
+
+export interface CustomerLineItem {
+  id: string;
+  name: string;
+  title: string;
+  quantity: number;
+  image: { url: string; altText: string | null } | null;
 }
 
 export interface CustomerProfile {
@@ -51,7 +90,17 @@ const CUSTOMER_QUERY = `
       lastName
       emailAddress { emailAddress }
       orders(first: 10, reverse: true) {
-        nodes { id name number processedAt totalPrice { amount currencyCode } }
+        nodes {
+          id
+          name
+          number
+          processedAt
+          fulfillmentStatus
+          totalPrice { amount currencyCode }
+          lineItems(first: 10) {
+            nodes { id name title quantity image { url altText } }
+          }
+        }
       }
     }
   }
@@ -136,7 +185,8 @@ export async function exchangeCustomerCode(code: string, returnedState: string |
   if (!response.ok) throw new Error("Shopify could not complete sign in. The code may have expired.");
   const tokenResponse = await response.json() as TokenResponse;
   if (!tokenResponse.access_token || !tokenResponse.expires_in) throw new Error("Shopify returned an incomplete sign-in response.");
-  setCustomerTokens({ accessToken: tokenResponse.access_token, refreshToken: tokenResponse.refresh_token, idToken: tokenResponse.id_token, expiresAt: Date.now() + tokenResponse.expires_in * 1000 });
+  const idTokenClaims = tokenResponse.id_token ? readIdTokenClaims(tokenResponse.id_token) : null;
+  setCustomerTokens({ accessToken: tokenResponse.access_token, refreshToken: tokenResponse.refresh_token, idToken: tokenResponse.id_token, expiresAt: Date.now() + tokenResponse.expires_in * 1000 }, idTokenClaims?.given_name || idTokenClaims?.name);
 }
 
 export function getCustomerTokens(): CustomerApiTokens | null {
@@ -146,14 +196,36 @@ export function getCustomerTokens(): CustomerApiTokens | null {
   } catch { return null; }
 }
 
-export function setCustomerTokens(tokens: CustomerApiTokens): void {
+export function setCustomerTokens(tokens: CustomerApiTokens, customerName?: string): void {
   // This frontend has no server endpoint for an httpOnly cookie. sessionStorage
   // limits token persistence to this tab, but it remains readable by JavaScript.
   requireBrowserStorage().setItem(TOKENS_KEY, JSON.stringify(tokens));
+  const initial = customerName?.trim().charAt(0).toUpperCase();
+  if (initial) requireBrowserStorage().setItem(CUSTOMER_INITIAL_KEY, initial);
+}
+
+function readIdTokenClaims(token: string): { given_name?: string; name?: string } | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as { given_name?: string; name?: string };
+  } catch { return null; }
+}
+
+export function getCustomerInitial(): string | null {
+  try { return requireBrowserStorage().getItem(CUSTOMER_INITIAL_KEY); } catch { return null; }
+}
+
+export function cacheCustomerInitial(firstName: string | null): void {
+  const initial = firstName?.trim().charAt(0).toUpperCase();
+  if (initial) requireBrowserStorage().setItem(CUSTOMER_INITIAL_KEY, initial);
 }
 
 export function clearCustomerTokens(): void {
-  try { requireBrowserStorage().removeItem(TOKENS_KEY); } catch { /* browser storage unavailable */ }
+  try {
+    requireBrowserStorage().removeItem(TOKENS_KEY);
+    requireBrowserStorage().removeItem(CUSTOMER_INITIAL_KEY);
+  } catch { /* browser storage unavailable */ }
 }
 
 async function refreshWithToken(tokens: CustomerApiTokens): Promise<string> {
@@ -185,6 +257,48 @@ export async function fetchCustomerProfile(): Promise<CustomerProfile> {
   const result = await apiResponse.json() as { data?: { customer: CustomerProfile }; errors?: Array<{ message: string }> };
   if (result.errors?.length || !result.data?.customer) throw new Error(result.errors?.[0]?.message || "Customer account data could not be loaded.");
   return result.data.customer;
+}
+
+export async function fetchCustomerOrder(orderId: string): Promise<CustomerOrderDetail | null> {
+  const accessToken = await getValidCustomerAccessToken();
+  if (!SHOPIFY_STORE_PERMANENT_DOMAIN) throw new Error("The Shopify storefront domain is not configured.");
+  const discoveryResponse = await fetch(`https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/.well-known/customer-account-api`);
+  if (!discoveryResponse.ok) throw new Error("Customer account data is temporarily unavailable.");
+  const apiConfig = await discoveryResponse.json() as { graphql_api?: string };
+  if (!apiConfig.graphql_api) throw new Error("Shopify returned an incomplete account API configuration.");
+  const query = `
+    query CustomerOrder($id: ID!) {
+      order(id: $id) {
+        id
+        name
+        number
+        createdAt
+        processedAt
+        fulfillmentStatus
+        totalPrice { amount currencyCode }
+        shippingAddress { firstName lastName address1 address2 city province country zip }
+        lineItems(first: 100) {
+          nodes { id name title quantity image { url altText } price { amount currencyCode } }
+        }
+        fulfillments(first: 10) {
+          nodes {
+            status
+            trackingInformation { company number url }
+          }
+        }
+      }
+    }
+  `;
+  const response = await fetch(apiConfig.graphql_api, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: accessToken },
+    body: JSON.stringify({ query, variables: { id: orderId } }),
+  });
+  if (!response.ok) throw new Error("Customer account data is temporarily unavailable.");
+  const result = await response.json() as { data?: { order: CustomerOrderDetail | null }; errors?: Array<{ message: string }> };
+  if (result.errors?.length && !result.data?.order) return null;
+  if (!result.data?.order) return null;
+  return result.data.order;
 }
 
 export async function logoutCustomer(): Promise<void> {

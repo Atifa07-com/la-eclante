@@ -2,6 +2,7 @@ import { Link, NavLink as RouterNav, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ShoppingBag, User, Menu, X } from "lucide-react";
 import { useCart } from "@/store/cart";
+import { getCustomerInitial, getCustomerTokens } from "@/lib/customerAuth";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -15,6 +16,7 @@ export function Header() {
   const { setOpen, count } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [customerInitial, setCustomerInitial] = useState<string | null>(null);
   const loc = useLocation();
   const itemCount = count();
 
@@ -26,6 +28,10 @@ export function Header() {
   }, []);
 
   useEffect(() => setMobileOpen(false), [loc.pathname]);
+
+  useEffect(() => {
+    setCustomerInitial(getCustomerTokens() ? getCustomerInitial() : null);
+  }, [loc.pathname]);
 
   return (
     <header
@@ -67,8 +73,8 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1 md:gap-3">
-          <Link to="/auth" aria-label="Account" className="p-2 hover:opacity-70 transition-opacity">
-            <User size={18} strokeWidth={1.5} />
+          <Link to={customerInitial ? "/account" : "/auth"} aria-label={customerInitial ? "Your account" : "Sign in"} className="p-2 hover:opacity-70 transition-opacity">
+            {customerInitial ? <span className="grid h-7 w-7 place-items-center rounded-full bg-accent-gold text-[11px] font-medium text-background">{customerInitial}</span> : <User size={18} strokeWidth={1.5} />}
           </Link>
           <button
             aria-label="Open cart"

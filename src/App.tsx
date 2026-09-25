@@ -14,6 +14,7 @@ import QuizResult from "./pages/QuizResult";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import AuthCallback from "./pages/AuthCallback";
+import OrderDetail from "./pages/OrderDetail";
 import NotFound from "./pages/NotFound";
 import { useCartSync } from "@/hooks/useCartSync";
 
@@ -34,6 +35,7 @@ const AppRoutes = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/account/orders/:orderId" element={<OrderDetail />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
