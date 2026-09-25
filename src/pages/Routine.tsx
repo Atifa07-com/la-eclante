@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Droplet, FlaskConical, MoonStar, Sparkles } from "lucide-react";
@@ -22,32 +22,35 @@ type RoutineProduct = {
 
 type RoutineDef = {
   id: string;
-  handle: string;
   name: string;
   description: string;
   bestFor: string;
-  baseTotal: number;
   luxury?: boolean;
   products: RoutineProduct[];
+  bundleHandles: Record<CommitmentKey, string>;
 };
 
 const COMMITMENTS = [
-  { id: "1-month", label: "1 MONTH", discount: 15, suffix: "" },
-  { id: "3-months", label: "3 MONTHS", discount: 20, suffix: " /m" },
-  { id: "6-months", label: "6 MONTHS", discount: 25, suffix: " /m" },
+  { id: "1", label: "1 MONTH" },
+  { id: "3", label: "3 MONTHS" },
+  { id: "6", label: "6 MONTHS" },
 ] as const;
 
-type CommitmentId = (typeof COMMITMENTS)[number]["id"];
+type CommitmentKey = (typeof COMMITMENTS)[number]["id"];
+type CommitmentId = CommitmentKey;
 
 const ROUTINES: RoutineDef[] = [
   {
     id: "clarity",
-    handle: "eclantian-clarity",
     name: "ECLANTIAN CLARITY",
     description:
       "A considered two-step foundation for maintaining balance and supporting skin through early-stage breakouts.",
     bestFor: "MILD / EARLY-STAGE ACNE",
-    baseTotal: 3200,
+    bundleHandles: {
+      "1": "eclantian-clarity-routine-essential-2-step-foundation",
+      "3": "eclantian-clarity-routine-essential-2-step-foundation-3-month",
+      "6": "eclantian-clarity-routine-essential-2-step-foundation-6-month",
+    },
     products: [
       {
         name: "Anti-Acne Face Wash",
@@ -67,12 +70,15 @@ const ROUTINES: RoutineDef[] = [
   },
   {
     id: "balance",
-    handle: "eclantian-balance",
     name: "ECLANTIAN BALANCE",
     description:
       "A focused three-step system for recurring acne, uneven texture, and skin that needs a steadier rhythm.",
     bestFor: "MODERATE / RECURRING ACNE",
-    baseTotal: 5600,
+    bundleHandles: {
+      "1": "eclantian-balance-routine-focused-3-step-acne-system",
+      "3": "eclantian-balance-routine-focused-3-step-acne-system-3-month",
+      "6": "eclantian-balance-routine-focused-3-step-acne-system-6-month",
+    },
     products: [
       {
         name: "Anti-Acne Face Wash",
@@ -99,12 +105,15 @@ const ROUTINES: RoutineDef[] = [
   },
   {
     id: "renewal",
-    handle: "eclantian-renewal",
     name: "ECLANTIAN RENEWAL",
     description:
       "A complete treatment rhythm for persistent acne, combining targeted clarity with barrier-conscious recovery.",
     bestFor: "SEVERE / PERSISTENT ACNE",
-    baseTotal: 6000,
+    bundleHandles: {
+      "1": "eclantian-renewal-routine-advanced-skin-recovery-complex",
+      "3": "eclantian-renewal-routine-advanced-skin-recovery-complex-3-month",
+      "6": "eclantian-renewal-routine-advanced-skin-recovery-complex-6-month",
+    },
     products: [
       {
         name: "Anti-Acne Face Wash",
@@ -131,13 +140,16 @@ const ROUTINES: RoutineDef[] = [
   },
   {
     id: "professional-support",
-    handle: "eclantian-professional-support",
     name: "ECLANTIAN PROFESSIONAL SUPPORT",
     description:
       "The most complete Eclantian system for deep, cystic acne, with an extended night renewal step for professional-level support.",
     bestFor: "DEEP / CYSTIC ACNE",
-    baseTotal: 9200,
     luxury: true,
+    bundleHandles: {
+      "1": "eclantian-professional-support-routine-maximum-strength-4-step-system",
+      "3": "eclantian-professional-support-routine-maximum-strength-4-step-system-3-month",
+      "6": "eclantian-professional-support-routine-maximum-strength-4-step-system-6-month",
+    },
     products: [
       {
         name: "Anti-Acne Face Wash",
@@ -175,30 +187,67 @@ const ICONS = { cleanser: Droplet, "acne-serum": FlaskConical, moisturizer: Spar
 
 const formatPKR = (n: number) => `Rs. ${n.toLocaleString("en-PK")}`;
 
-const getCommitmentPrice = (baseTotal: number, commitment: CommitmentId) => {
-  const selected = COMMITMENTS.find((option) => option.id === commitment) ?? COMMITMENTS[0];
-  const months = commitment === "1-month" ? 1 : commitment === "3-months" ? 3 : 6;
-  return Math.round((baseTotal * months * (1 - selected.discount / 100)) / months);
+const FRONTEND_PRICES: Record<string, Record<CommitmentKey, { price: number; original: number }>> = {
+  clarity: {
+    "1": { price: 2720, original: 3200 },
+    "3": { price: 2560, original: 3200 },
+    "6": { price: 2400, original: 3200 },
+  },
+  balance: {
+    "1": { price: 4760, original: 5600 },
+    "3": { price: 4480, original: 5600 },
+    "6": { price: 4200, original: 5600 },
+  },
+  renewal: {
+    "1": { price: 5100, original: 6000 },
+    "3": { price: 4800, original: 6000 },
+    "6": { price: 4500, original: 6000 },
+  },
+  "professional-support": {
+    "1": { price: 7820, original: 9200 },
+    "3": { price: 7360, original: 9200 },
+    "6": { price: 6900, original: 9200 },
+  },
 };
 
 const Routine = () => {
   const [selected, setSelected] = useState<RoutineDef | null>(null);
   const [commitments, setCommitments] = useState<Record<string, CommitmentId>>({});
+  const [bundles, setBundles] = useState<Record<string, Record<CommitmentKey, ShopifyProductNode>>>({});
   const { addItem, isLoading } = useCart();
 
-  const getSelectedCommitment = (routine: RoutineDef) => commitments[routine.id] ?? "1-month";
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all(
+      ROUTINES.map(async (routine) => {
+        const products = await Promise.all(
+          COMMITMENTS.map(async ({ id }) => [id, await fetchProductByHandle(routine.bundleHandles[id])] as const)
+        );
+        if (products.some(([, product]) => !product)) return null;
+        return [routine.id, Object.fromEntries(products) as Record<CommitmentKey, ShopifyProductNode>] as const;
+      })
+    ).then((results) => {
+      if (!cancelled) {
+        setBundles(Object.fromEntries(results.filter(Boolean) as Array<readonly [string, Record<CommitmentKey, ShopifyProductNode>]>));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const getSelectedCommitment = (routine: RoutineDef) => commitments[routine.id] ?? "1";
+  const getSelectedBundle = (routine: RoutineDef) => bundles[routine.id]?.[getSelectedCommitment(routine)];
 
   const addRoutineToCart = async (routine: RoutineDef, commitment = getSelectedCommitment(routine)) => {
-    const product = await fetchProductByHandle(routine.handle);
+    const product = bundles[routine.id]?.[commitment];
     if (!product) {
       toast.error("This routine is temporarily unavailable. Please try again shortly.");
       return;
     }
 
     const commitmentLabel = COMMITMENTS.find((option) => option.id === commitment)?.label ?? "1 MONTH";
-    const variant =
-      product.variants.edges.find((item) => item.node.title.toUpperCase().includes(commitmentLabel))?.node ??
-      product.variants.edges[0]?.node;
+    const variant = product.variants.edges[0]?.node;
     if (!variant) {
       toast.error("This routine has no available purchase option yet.");
       return;
@@ -217,8 +266,8 @@ const Routine = () => {
 
   if (selected) {
     const commitment = getSelectedCommitment(selected);
-    const selectedOption = COMMITMENTS.find((option) => option.id === commitment) ?? COMMITMENTS[0];
-    const bundle = getCommitmentPrice(selected.baseTotal, commitment);
+    const selectedBundle = getSelectedBundle(selected);
+    const frontendPrice = FRONTEND_PRICES[selected.id][commitment];
     return (
       <div>
         <section className="hero-surface">
@@ -289,10 +338,10 @@ const Routine = () => {
               </div>
               <div className="md:text-right">
                 <p className="text-sm text-muted-foreground line-through">
-                  {formatPKR(selected.baseTotal)}
+                  {formatPKR(frontendPrice.original)}
                 </p>
                 <p className="font-serif text-4xl md:text-5xl mt-1">
-                  {formatPKR(bundle)}{selectedOption.suffix}
+                  {formatPKR(frontendPrice.price)}
                 </p>
                 <div className="mt-6 flex md:justify-end gap-1" role="group" aria-label={`${selected.name} commitment`}>
                   {COMMITMENTS.map((option) => (
@@ -310,10 +359,10 @@ const Routine = () => {
                     </button>
                   ))}
                 </div>
-                {commitment === "6-months" && (
+                {commitment === "6" && (
                   <p className="mt-2 text-[11px] uppercase tracking-[0.12em] text-accent-gold">+ LA-ECLANTE SKIN CREDIT</p>
                 )}
-                <Button size="lg" variant="primary" className="mt-6" onClick={() => addRoutineToCart(selected, commitment)} disabled={isLoading}>
+                <Button size="lg" variant="primary" className="mt-6" onClick={() => addRoutineToCart(selected, commitment)} disabled={isLoading || !selectedBundle}>
                   {isLoading ? "Adding..." : "Add Full Routine to Cart"}
                 </Button>
               </div>
@@ -368,8 +417,8 @@ const Routine = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-7">
           {ROUTINES.map((r) => {
             const commitment = getSelectedCommitment(r);
-            const selectedOption = COMMITMENTS.find((option) => option.id === commitment) ?? COMMITMENTS[0];
-            const bundle = getCommitmentPrice(r.baseTotal, commitment);
+            const selectedBundle = getSelectedBundle(r);
+            const frontendPrice = FRONTEND_PRICES[r.id][commitment];
             return (
               <article
                 key={r.id}
@@ -404,13 +453,13 @@ const Routine = () => {
                 </div>
 
                 <div className="flex items-baseline gap-3">
-                  <span className="font-serif text-2xl">{formatPKR(bundle)}{selectedOption.suffix}</span>
+                  <span className="font-serif text-2xl">{formatPKR(frontendPrice.price)}</span>
                   <span className={`text-sm line-through ${r.luxury ? "text-[#b9aa82]" : "text-muted-foreground"}`}>
-                    {formatPKR(r.baseTotal)}
+                    {formatPKR(frontendPrice.original)}
                   </span>
                 </div>
                 <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-accent-gold">
-                  Save {selectedOption.discount}%{commitment === "6-months" ? " + la eclante credit" : ""}
+                  {commitment === "6" ? "LA-ECLANTE SKIN CREDIT" : ""}
                 </p>
 
                 <div className={`mt-6 flex gap-1 ${r.luxury ? "text-[#f8edcf]" : ""}`} role="group" aria-label={`${r.name} commitment`}>
@@ -431,7 +480,7 @@ const Routine = () => {
                     </button>
                   ))}
                 </div>
-                {commitment === "6-months" && (
+                {commitment === "6" && (
                   <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-accent-gold">LA-ECLANTE SKIN CREDIT</p>
                 )}
 
@@ -440,6 +489,7 @@ const Routine = () => {
                     setSelected(r);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
+                  disabled={!selectedBundle}
                   className="mt-8 rounded-none h-12 tracking-[0.16em] uppercase text-[12px]"
                 >
                   Shop This Routine
