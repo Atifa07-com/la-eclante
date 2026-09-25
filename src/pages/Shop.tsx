@@ -2,6 +2,21 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchProducts, formatMoney, type ShopifyProduct } from "@/lib/shopify";
 
+const HIDDEN_ROUTINE_HANDLES = new Set([
+  "eclantian-clarity-routine-essential-2-step-foundation",
+  "eclantian-clarity-routine-essential-2-step-foundation-3-month",
+  "eclantian-clarity-routine-essential-2-step-foundation-6-month",
+  "eclantian-balance-routine-focused-3-step-acne-system",
+  "eclantian-balance-routine-focused-3-step-acne-system-3-month",
+  "eclantian-balance-routine-focused-3-step-acne-system-6-month",
+  "eclantian-renewal-routine-advanced-skin-recovery-complex",
+  "eclantian-renewal-routine-advanced-skin-recovery-complex-3-month",
+  "eclantian-renewal-routine-advanced-skin-recovery-complex-6-month",
+  "eclantian-professional-support-routine-maximum-strength-4-step-system",
+  "eclantian-professional-support-routine-maximum-strength-4-step-system-3-month",
+  "eclantian-professional-support-routine-maximum-strength-4-step-system-6-month",
+]);
+
 const Shop = () => {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +28,7 @@ const Shop = () => {
       .then((data) => {
         // null => Shopify unavailable; [] => genuinely no products.
         if (data === null) setError(true);
-        else setProducts(data);
+        else setProducts(data.filter((product) => !HIDDEN_ROUTINE_HANDLES.has(product.node.handle)));
       })
       .catch((e) => {
         console.error(e);
@@ -38,7 +53,7 @@ const Shop = () => {
         <p className="eyebrow">The shop</p>
         <h1 className="font-serif text-5xl md:text-7xl mt-4 leading-tight">Considered formulas.</h1>
         <p className="mt-5 max-w-xl text-muted-foreground">
-          Every LA-ECLANTE product is dermatologist-tested, fragrance-free, and made for skin that reacts.
+          Every LA-ECLANTE product is Dermatologist-tested, clinically restorative care formulated for reactive skin.
         </p>
       </header>
 
