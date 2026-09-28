@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Droplet, FlaskConical, MoonStar, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, Droplet, FlaskConical, MoonStar, Sparkles } from "lucide-react";
 import routineLineup from "@/assets/routine-lineup.jfif";
 import productCleanser from "@/assets/anti-acne-facewash.jfif";
 import productSerum from "@/assets/anti-acne-serum.jfif";
@@ -380,7 +380,10 @@ const Routine = () => {
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 text-sm font-semibold tracking-wide text-accent-gold">Free shipping</p>
+                <p className="mt-2 flex items-center justify-start gap-2 text-sm font-semibold tracking-wide text-emerald-700 md:justify-end">
+                  <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Free shipping
+                </p>
                 <Button size="lg" variant="primary" className="mt-6" onClick={() => addRoutineToCart(selected, commitment)} disabled={isLoading || !selectedBundle}>
                   {isLoading ? "Adding..." : "Add Full Routine to Cart"}
                 </Button>
@@ -464,7 +467,8 @@ const Routine = () => {
                   <p className={`text-sm leading-relaxed ${r.luxury ? "text-[#d9cda9]" : "text-muted-foreground"}`}>
                     {r.description}
                   </p>
-                  <p className="mt-3 min-h-5 text-sm font-semibold tracking-wide text-accent-gold">
+                  <p className={`mt-3 flex min-h-5 items-center gap-2 text-sm font-semibold tracking-wide ${r.luxury ? "text-emerald-300" : "text-emerald-700"}`}>
+                    <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
                     Free shipping
                   </p>
                 </div>
