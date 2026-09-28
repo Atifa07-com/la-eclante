@@ -380,10 +380,14 @@ const Routine = () => {
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 flex items-center justify-start gap-2 text-sm font-semibold tracking-wide text-emerald-700 md:justify-end">
-                  <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  Free shipping
-                </p>
+                {commitment === "1" ? (
+                  <p aria-hidden="true" className="invisible mt-2 min-h-5 text-sm">Free shipping</p>
+                ) : (
+                  <p className="mt-2 flex items-center justify-start gap-2 text-sm font-semibold tracking-wide text-emerald-700 md:justify-end">
+                    <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    Free shipping
+                  </p>
+                )}
                 <Button size="lg" variant="primary" className="mt-6" onClick={() => addRoutineToCart(selected, commitment)} disabled={isLoading || !selectedBundle}>
                   {isLoading ? "Adding..." : "Add Full Routine to Cart"}
                 </Button>
@@ -467,10 +471,14 @@ const Routine = () => {
                   <p className={`text-sm leading-relaxed ${r.luxury ? "text-[#d9cda9]" : "text-muted-foreground"}`}>
                     {r.description}
                   </p>
-                  <p className={`mt-3 flex min-h-5 items-center gap-2 text-sm font-semibold tracking-wide ${r.luxury ? "text-emerald-300" : "text-emerald-700"}`}>
-                    <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    Free shipping
-                  </p>
+                  {commitment === "1" ? (
+                    <p aria-hidden="true" className="invisible mt-3 min-h-5 text-sm">Free shipping</p>
+                  ) : (
+                    <p className={`mt-3 flex min-h-5 items-center gap-2 text-sm font-semibold tracking-wide ${r.luxury ? "text-emerald-300" : "text-emerald-700"}`}>
+                      <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      Free shipping
+                    </p>
+                  )}
                 </div>
 
                 <div className={`grid min-w-0 items-start gap-2 border-y px-6 py-6 ${r.luxury ? "border-accent-gold/30" : "border-border"}`} style={{ gridTemplateColumns: `repeat(${r.products.length}, minmax(0, 1fr))` }}>
