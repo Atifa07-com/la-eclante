@@ -56,6 +56,17 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-9">
+          <RouterNav
+            to="/"
+            className={({ isActive }) =>
+              cn(
+                "text-[13px] tracking-[0.14em] uppercase transition-colors duration-300",
+                isActive ? "text-background" : "text-background/70 hover:text-background"
+              )
+            }
+          >
+            Home
+          </RouterNav>
           {links.map((l) => (
             <RouterNav
               key={l.to}
@@ -73,13 +84,13 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1 md:gap-3">
-          <Link to={customerInitial ? "/account" : "/auth"} aria-label={customerInitial ? "Your account" : "Sign in"} className="p-2 hover:opacity-70 transition-opacity">
+          <Link to={customerInitial ? "/account" : "/auth"} aria-label={customerInitial ? "Your account" : "Sign in"} className="inline-flex h-10 w-10 items-center justify-center hover:opacity-70 transition-opacity">
             {customerInitial ? <span className="grid h-7 w-7 place-items-center rounded-full bg-accent-gold text-[11px] font-medium text-background">{customerInitial}</span> : <User size={18} strokeWidth={1.5} />}
           </Link>
           <button
             aria-label="Open cart"
             onClick={() => setOpen(true)}
-            className="p-2 hover:opacity-70 transition-opacity relative"
+            className="relative inline-flex h-10 w-10 items-center justify-center hover:opacity-70 transition-opacity"
           >
             <ShoppingBag size={18} strokeWidth={1.5} />
             {itemCount > 0 && (

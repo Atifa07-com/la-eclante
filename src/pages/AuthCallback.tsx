@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { exchangeCustomerCode } from "@/lib/customerAuth";
 
+const WELCOME_OFFER_KEY = "eclantian_welcome_offer";
+
 export default function AuthCallbackPage() {
   const location = useLocation();
   const [error, setError] = useState<string | null>(null);
@@ -12,13 +14,17 @@ export default function AuthCallbackPage() {
     const code = params.get("code");
     const providerError = params.get("error");
     if (providerError) {
+      sessionStorage.removeItem(WELCOME_OFFER_KEY);
       setError(providerError === "login_required" ? "Your Shopify session has ended. Please sign in again." : "Sign in was cancelled. Please try again.");
       return () => { active = false; };
     }
-    if (!code) { setError("No sign-in code was returned. Please try again."); return () => { active = false; }; }
+    if (!code) { sessionStorage.removeItem(WELCOME_OFFER_KEY); setError("No sign-in code was returned. Please try again."); return () => { active = false; }; }
     exchangeCustomerCode(code, params.get("state"))
       .then(() => { if (active) window.location.replace("/account"); })
-      .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : "We could not complete sign in. Please try again."); });
+      .catch((reason: unknown) => {
+        sessionStorage.removeItem(WELCOME_OFFER_KEY);
+        if (active) setError(reason instanceof Error ? reason.message : "We could not complete sign in. Please try again.");
+      });
     return () => { active = false; };
   }, [location.search]);
 

@@ -1,77 +1,77 @@
 import { useEffect, useState } from "react";
-import { z } from "zod";
-import { subscribeToNewsletter } from "@/lib/customer";
-import { toast } from "sonner";
-import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { getCustomerTokens } from "@/lib/customerAuth";
 
-const emailSchema = z.string().trim().email().max(255);
 const STORAGE_KEY = "la-eclante-popup-shown-v1";
+const WELCOME_OFFER_KEY = "eclantian_welcome_offer";
 
 export function NewsletterPopup() {
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (getCustomerTokens()) return;
     if (sessionStorage.getItem(STORAGE_KEY)) return;
     const t = setTimeout(() => setOpen(true), 8000);
     return () => clearTimeout(t);
   }, []);
 
-  const close = () => {
+  const dismiss = () => {
     setOpen(false);
     sessionStorage.setItem(STORAGE_KEY, "1");
   };
 
-  const subscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = emailSchema.safeParse(email);
-    if (!parsed.success) return toast.error("Please enter a valid email.");
-    setLoading(true);
-    const result = await subscribeToNewsletter({ email: parsed.data, source: "popup" });
-    setLoading(false);
-    if (!result.ok) {
-      toast.error("Could not subscribe. Please try again.");
-      return;
-    }
-    toast.success("Welcome — use code WELCOME10 at checkout.");
-    close();
+  const claimOffer = () => {
+    dismiss();
+    sessionStorage.setItem(WELCOME_OFFER_KEY, "1");
+    navigate("/auth");
   };
 
-  if (!open) return null;
+  if (!open || getCustomerTokens()) return null;
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4 animate-fade-up">
-      <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={close} aria-hidden />
-      <div className="relative w-full max-w-md bg-background border border-border shadow-elevated p-8 md:p-10">
-        <button
-          onClick={close}
-          aria-label="Close"
-          className="absolute top-3 right-3 p-2 text-muted-foreground hover:text-foreground"
-        >
-          <X size={16} />
-        </button>
-        <p className="eyebrow">A small welcome</p>
-        <h3 className="font-serif text-3xl mt-3 leading-tight">Get 10% off your first order.</h3>
-        <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-          Join the LA-ECLANTE list for skin-care guidance, new arrivals, and a quiet welcome offer.
-        </p>
-        <form onSubmit={subscribe} className="mt-6 space-y-3">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="w-full h-12 px-4 border border-border bg-transparent text-sm focus:border-foreground focus:outline-none"
-          />
-          <Button type="submit" variant="primary" disabled={loading} className="w-full">
-            {loading ? "..." : "Get my 10% off"}
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) setOpen(true);
+        else dismiss();
+      }}
+    >
+      <DialogContent className="max-w-md overflow-hidden rounded-2xl border-border p-0 shadow-elevated">
+        <div className="h-0.5 w-full bg-accent-gold" aria-hidden="true" />
+        <div className="px-7 pb-7 pt-8 md:px-9 md:pb-9">
+          <p className="eyebrow">AN ECLANTIAN WELCOME</p>
+          <DialogTitle className="mt-3 font-serif text-3xl leading-tight font-normal">
+            Your 10% welcome reward is waiting.
+          </DialogTitle>
+          <DialogDescription className="mt-4 text-sm leading-relaxed text-muted-foreground">
+            Become an Eclantian in under a minute. No password, just a one-time code sent to your email. Unlock 10% off your first order, routine guidance made for your skin, and first access to new launches.
+          </DialogDescription>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={claimOffer}
+            className="group mt-7 h-auto min-h-12 w-full whitespace-normal py-3"
+          >
+            <span>Claim my 10% — Become an Eclantian</span>
+            <ArrowRight className="shrink-0 transition-transform group-hover:translate-x-1" size={17} aria-hidden="true" />
           </Button>
-        </form>
-      </div>
-    </div>
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            Passwordless sign-in · Under 60 seconds
+          </p>
+          <button
+            type="button"
+            onClick={dismiss}
+            className="mt-4 w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Maybe later
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

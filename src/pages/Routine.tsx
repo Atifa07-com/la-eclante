@@ -187,6 +187,13 @@ const ICONS = { cleanser: Droplet, "acne-serum": FlaskConical, moisturizer: Spar
 
 const formatPKR = (n: number) => `Rs. ${n.toLocaleString("en-PK")}`;
 
+const getRoutineProductLabel = (product: RoutineProduct) => {
+  if (product.type === "cleanser") return "Face Wash";
+  if (product.type === "moisturizer") return "Moisturiser";
+  if (product.type === "retinal") return "Retinal Serum";
+  return product.name.startsWith("Advanced") ? "Advanced Serum" : "Treatment";
+};
+
 const FRONTEND_PRICES: Record<string, Record<CommitmentKey, { price: number; original: number }>> = {
   clarity: {
     "1": { price: 2720, original: 3200 },
@@ -268,6 +275,12 @@ const Routine = () => {
     const commitment = getSelectedCommitment(selected);
     const selectedBundle = getSelectedBundle(selected);
     const frontendPrice = FRONTEND_PRICES[selected.id][commitment];
+    const months = Number(commitment);
+    const selectedVariantPrice = selectedBundle?.variants.edges[0]?.node.price.amount;
+    const chargedTotal = selectedVariantPrice === undefined ? null : Number(selectedVariantPrice);
+    const totalSavings = chargedTotal !== null && Number.isFinite(chargedTotal)
+      ? frontendPrice.original * months - chargedTotal
+      : null;
     return (
       <div>
         <section className="hero-surface">
@@ -340,9 +353,17 @@ const Routine = () => {
                 <p className="text-sm text-muted-foreground line-through">
                   {formatPKR(frontendPrice.original)}
                 </p>
-                <p className="font-serif text-4xl md:text-5xl mt-1">
+                <p className="mt-1 flex min-w-0 flex-wrap items-baseline gap-2 md:justify-end">
+                  <span className="font-serif text-4xl md:text-5xl">
                   {formatPKR(frontendPrice.price)}
+                  </span>
+                  <span className="text-xs tracking-wide text-muted-foreground">/mo</span>
                 </p>
+                {totalSavings !== null && (
+                  <p className="mt-2 text-sm text-accent-gold">
+                    Total savings: {formatPKR(totalSavings)}
+                  </p>
+                )}
                 <div className="mt-6 flex md:justify-end gap-1" role="group" aria-label={`${selected.name} commitment`}>
                   {COMMITMENTS.map((option) => (
                     <button
@@ -359,9 +380,7 @@ const Routine = () => {
                     </button>
                   ))}
                 </div>
-                {commitment === "6" && (
-                  <p className="mt-2 text-[11px] uppercase tracking-[0.12em] text-accent-gold">+ LA-ECLANTE SKIN CREDIT</p>
-                )}
+                <p className="mt-2 text-sm font-semibold tracking-wide text-accent-gold">Free shipping</p>
                 <Button size="lg" variant="primary" className="mt-6" onClick={() => addRoutineToCart(selected, commitment)} disabled={isLoading || !selectedBundle}>
                   {isLoading ? "Adding..." : "Add Full Routine to Cart"}
                 </Button>
@@ -414,61 +433,87 @@ const Routine = () => {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-7">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
           {ROUTINES.map((r) => {
             const commitment = getSelectedCommitment(r);
             const selectedBundle = getSelectedBundle(r);
             const frontendPrice = FRONTEND_PRICES[r.id][commitment];
+            const months = Number(commitment);
+            const bundleTotal = selectedBundle ? Number(selectedBundle.priceRange.minVariantPrice.amount) : null;
+            const monthlyPrice = bundleTotal !== null && Number.isFinite(bundleTotal) ? bundleTotal / months : null;
+            const totalSavings = bundleTotal !== null && Number.isFinite(bundleTotal)
+              ? frontendPrice.original * months - bundleTotal
+              : null;
             return (
               <article
                 key={r.id}
-                className={`group flex flex-col rounded-xl p-8 md:p-10 transition-all duration-200 ease-in-out ${
+                className={`group row-span-6 grid min-w-0 [grid-template-rows:subgrid] gap-y-0 rounded-xl border p-0 transition-all duration-200 ease-in-out ${
                   r.luxury
-                    ? "border border-[#deaf04] bg-[#211b12] text-[#f8edcf] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:border-[#C9A24B] hover:bg-black hover:shadow-[0_0_0_1px_#C9A24B,0_0_20px_4px_rgba(201,162,75,0.35)]"
-                    : "border border-[#E8E0D4] bg-[#FBF8F3] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:border-[#D9C7B8] hover:bg-[#F5EBE3] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)]"
+                    ? "border-[#deaf04] bg-[#211b12] text-[#f8edcf] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:border-[#C9A24B] hover:bg-black hover:shadow-[0_0_0_1px_#C9A24B,0_0_20px_4px_rgba(201,162,75,0.35)]"
+                    : "border-[#E8E0D4] bg-[#FBF8F3] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:border-[#D9C7B8] hover:bg-[#F5EBE3] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)]"
                 }`}
               >
-                <p className={`eyebrow ${r.luxury ? "text-accent-gold" : ""}`}>{r.bestFor}</p>
-                <h3 className="font-serif text-2xl md:text-3xl mt-3 leading-tight">
-                  {r.name}
-                </h3>
-                <p className={`mt-4 text-sm leading-relaxed min-h-[5rem] ${r.luxury ? "text-[#d9cda9]" : "text-muted-foreground"}`}>
-                  {r.description}
-                </p>
+                <div className="flex flex-col px-6 pt-8 pb-4">
+                  <p className={`eyebrow ${r.luxury ? "text-accent-gold" : ""}`}>{r.bestFor}</p>
+                  <h3 className="mt-3 font-serif text-2xl leading-tight md:text-3xl">
+                    {r.name}
+                  </h3>
+                </div>
 
-                <div className={`my-8 grid grid-cols-4 items-start gap-2 sm:gap-3 py-6 border-y ${r.luxury ? "border-accent-gold/30" : "border-border"}`}>
+                <div className="flex flex-col justify-between px-6 py-4">
+                  <p className={`text-sm leading-relaxed ${r.luxury ? "text-[#d9cda9]" : "text-muted-foreground"}`}>
+                    {r.description}
+                  </p>
+                  <p className="mt-3 min-h-5 text-sm font-semibold tracking-wide text-accent-gold">
+                    Free shipping
+                  </p>
+                </div>
+
+                <div className={`grid min-w-0 items-start gap-2 border-y px-6 py-6 ${r.luxury ? "border-accent-gold/30" : "border-border"}`} style={{ gridTemplateColumns: `repeat(${r.products.length}, minmax(0, 1fr))` }}>
                   {r.products.map((p) => {
                     const Icon = ICONS[p.type];
                     return (
                       <div key={p.name} className="flex min-w-0 flex-col items-center text-center">
-                        <div className={`h-12 w-12 rounded-full flex items-center justify-center ${r.luxury ? "bg-accent-gold text-[#211b12]" : "bg-secondary text-foreground"}`}>
-                          <Icon className="h-5 w-5" />
+                        <div className={`flex h-12 w-12 items-center justify-center rounded-full ${r.luxury ? "bg-accent-gold text-[#211b12]" : "bg-secondary text-foreground"}`}>
+                          <Icon className="h-5 w-5" aria-hidden="true" />
                         </div>
-                        <p className={`mt-3 min-h-[3.5rem] w-full break-words text-[9px] uppercase tracking-[0.1em] leading-tight [overflow-wrap:anywhere] ${r.luxury ? "text-[#d9cda9]" : "text-muted-foreground"}`}>
-                          {p.name.replace(/\(.*\)/, "").trim().replace("Korean Glass Skin ", "").replace("Advanced Acne Treatment ", "Advanced ")}
+                        <p className={`mt-3 min-h-8 w-full break-normal hyphens-none text-[9px] uppercase tracking-[0.08em] leading-tight [overflow-wrap:normal] ${r.luxury ? "text-[#d9cda9]" : "text-muted-foreground"}`}>
+                          {getRoutineProductLabel(p)}
                         </p>
                       </div>
                     );
                   })}
                 </div>
 
-                <div className="flex items-baseline gap-3">
-                  <span className="font-serif text-2xl">{formatPKR(frontendPrice.price)}</span>
-                  <span className={`text-sm line-through ${r.luxury ? "text-[#b9aa82]" : "text-muted-foreground"}`}>
-                    {formatPKR(frontendPrice.original)}
-                  </span>
+                <div className="min-w-0 px-6 py-5">
+                  <div className="flex min-w-0 flex-wrap items-baseline gap-2">
+                    <span className="min-w-0 font-serif text-xl">
+                      {monthlyPrice === null ? "—" : formatPKR(Number(monthlyPrice.toFixed(2)))}
+                    </span>
+                    <span className="shrink-0 text-xs tracking-wide text-muted-foreground">/mo</span>
+                    <span className={`shrink-0 text-sm line-through ${r.luxury ? "text-[#b9aa82]" : "text-muted-foreground"}`}>
+                      {formatPKR(frontendPrice.original)}
+                    </span>
+                  </div>
+                  {commitment === "1" ? (
+                    <p aria-hidden="true" className="invisible mt-2 h-4 text-xs">Billed price placeholder</p>
+                  ) : (
+                    <p className="mt-2 h-4 text-xs tracking-wide text-muted-foreground">
+                      Billed {bundleTotal === null ? "—" : formatPKR(bundleTotal)} total
+                    </p>
+                  )}
+                  <p className={`mt-1 h-4 text-xs ${totalSavings === null ? "invisible" : "text-accent-gold"}`} aria-hidden={totalSavings === null}>
+                    {totalSavings === null ? "Total savings" : `Total savings: ${formatPKR(totalSavings)}`}
+                  </p>
                 </div>
-                <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-accent-gold">
-                  {commitment === "6" ? "LA-ECLANTE SKIN CREDIT" : ""}
-                </p>
 
-                <div className={`mt-6 flex gap-1 ${r.luxury ? "text-[#f8edcf]" : ""}`} role="group" aria-label={`${r.name} commitment`}>
+                <div className={`grid h-20 grid-cols-3 px-6 py-3 ${r.luxury ? "text-[#f8edcf]" : ""}`} role="group" aria-label={`${r.name} commitment`}>
                   {COMMITMENTS.map((option) => (
                     <button
                       key={option.id}
                       type="button"
                       onClick={() => setCommitments((current) => ({ ...current, [r.id]: option.id }))}
-                      className={`flex-1 px-2 py-2 text-[10px] uppercase tracking-[0.1em] border transition-colors ${
+                      className={`flex h-14 min-w-0 flex-col items-center justify-center border text-[10px] uppercase tracking-[0.1em] transition-colors ${
                         commitment === option.id
                           ? "bg-foreground text-background border-foreground"
                           : r.luxury
@@ -480,20 +525,19 @@ const Routine = () => {
                     </button>
                   ))}
                 </div>
-                {commitment === "6" && (
-                  <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-accent-gold">LA-ECLANTE SKIN CREDIT</p>
-                )}
 
-                <Button
-                  onClick={() => {
-                    setSelected(r);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  disabled={!selectedBundle}
-                  className="mt-8 rounded-none h-12 tracking-[0.16em] uppercase text-[12px]"
-                >
-                  Shop This Routine
-                </Button>
+                <div className="flex items-end px-6 pt-4 pb-8">
+                  <Button
+                    onClick={() => {
+                      setSelected(r);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    disabled={!selectedBundle}
+                    className="h-12 w-full rounded-none text-[12px] uppercase tracking-[0.16em]"
+                  >
+                    Shop This Routine
+                  </Button>
+                </div>
               </article>
             );
           })}
