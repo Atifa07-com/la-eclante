@@ -1,4 +1,4 @@
-import aboutPortrait from "@/assets/about-portrait.jpg";
+import aboutPortrait from "@/assets/doctors image.jfif";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 

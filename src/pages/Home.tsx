@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import heroProduct from "@/assets/hero-product.jfif";
-import aboutPortrait from "@/assets/about-portrait.jpg";
+import aboutPortrait from "@/assets/doctors image.jfif";
 import { Button } from "@/components/ui/button";
 import { fetchProducts, formatMoney, type ShopifyProduct } from "@/lib/shopify";
 import { Leaf, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";

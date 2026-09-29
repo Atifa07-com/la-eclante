@@ -19,6 +19,9 @@ export function Header() {
   const [customerInitial, setCustomerInitial] = useState<string | null>(null);
   const loc = useLocation();
   const itemCount = count();
+  const navLinks = customerInitial
+    ? [...links.slice(0, 3), { to: "/account#orders", label: "My Orders" }, ...links.slice(3)]
+    : links;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -67,7 +70,7 @@ export function Header() {
           >
             Home
           </RouterNav>
-          {links.map((l) => (
+          {navLinks.map((l) => (
             <RouterNav
               key={l.to}
               to={l.to}
@@ -105,7 +108,7 @@ export function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-background/15 bg-charcoal text-background">
           <nav className="container-wide py-4 flex flex-col gap-3">
-            {links.map((l) => (
+            {navLinks.map((l) => (
               <RouterNav
                 key={l.to}
                 to={l.to}
