@@ -2,7 +2,7 @@ import { Link, NavLink as RouterNav, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ShoppingBag, User, Menu, X } from "lucide-react";
 import { useCart } from "@/store/cart";
-import { getCustomerInitial, getCustomerTokens } from "@/lib/customerAuth";
+import { CUSTOMER_INITIAL_UPDATED_EVENT, getCustomerInitial, getCustomerTokens } from "@/lib/customerAuth";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -16,10 +16,11 @@ export function Header() {
   const { setOpen, count } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [customerSignedIn, setCustomerSignedIn] = useState(false);
   const [customerInitial, setCustomerInitial] = useState<string | null>(null);
   const loc = useLocation();
   const itemCount = count();
-  const navLinks = customerInitial
+  const navLinks = customerSignedIn
     ? [...links.slice(0, 3), { to: "/account#orders", label: "My Orders" }, ...links.slice(3)]
     : links;
 
@@ -33,7 +34,14 @@ export function Header() {
   useEffect(() => setMobileOpen(false), [loc.pathname]);
 
   useEffect(() => {
-    setCustomerInitial(getCustomerTokens() ? getCustomerInitial() : null);
+    const syncCustomerState = () => {
+      const signedIn = Boolean(getCustomerTokens());
+      setCustomerSignedIn(signedIn);
+      setCustomerInitial(signedIn ? getCustomerInitial() : null);
+    };
+    syncCustomerState();
+    window.addEventListener(CUSTOMER_INITIAL_UPDATED_EVENT, syncCustomerState);
+    return () => window.removeEventListener(CUSTOMER_INITIAL_UPDATED_EVENT, syncCustomerState);
   }, [loc.pathname]);
 
   return (
@@ -87,7 +95,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1 md:gap-3">
-          <Link to={customerInitial ? "/account" : "/auth"} aria-label={customerInitial ? "Your account" : "Sign in"} className="inline-flex h-10 w-10 items-center justify-center hover:opacity-70 transition-opacity">
+          <Link to={customerSignedIn ? "/account" : "/auth"} aria-label={customerSignedIn ? "Your account" : "Sign in"} className="inline-flex h-10 w-10 items-center justify-center hover:opacity-70 transition-opacity">
             {customerInitial ? <span className="grid h-7 w-7 place-items-center rounded-full bg-accent-gold text-[11px] font-medium text-background">{customerInitial}</span> : <User size={18} strokeWidth={1.5} />}
           </Link>
           <button
