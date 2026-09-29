@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Check, Copy, LogOut, RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { buildCustomerAuthorizeUrl, cacheCustomerInitial, fetchCustomerProfile, hasNameCaptureBeenPrompted, logoutCustomer } from "@/lib/customerAuth";
+import { buildCustomerAuthorizeUrl, cacheCustomerInitial, fetchCustomerProfile, hasNameCaptureBeenPrompted, logoutCustomer, markNameCapturePrompted } from "@/lib/customerAuth";
 import type { CustomerProfile } from "@/lib/customerAuth";
 import { toast } from "sonner";
 
@@ -17,11 +17,18 @@ export default function AccountPage() {
   const [showWelcomeOffer, setShowWelcomeOffer] = useState(false);
   const [copiedWelcomeOffer, setCopiedWelcomeOffer] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const hasWelcomeOffer = sessionStorage.getItem(WELCOME_OFFER_KEY) === "1";
     fetchCustomerProfile().then((customer) => {
       cacheCustomerInitial(customer.firstName);
+      const hasName = Boolean(customer.firstName?.trim() || customer.lastName?.trim());
+      if (!hasName && !hasNameCaptureBeenPrompted(customer.id)) {
+        markNameCapturePrompted(customer.id);
+        navigate("/welcome-name", { replace: true });
+        return;
+      }
       setProfile(customer);
       if (hasWelcomeOffer) {
         setShowWelcomeOffer(true);
@@ -38,7 +45,7 @@ export default function AccountPage() {
       sessionStorage.removeItem(WELCOME_OFFER_KEY);
       setError(reason instanceof Error && reason.message === "not_authenticated" ? "Sign in to view your account and order history." : "We could not load your account right now. Please try again.");
     }).finally(() => setLoading(false));
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (loading || error || location.hash !== "#orders") return;
