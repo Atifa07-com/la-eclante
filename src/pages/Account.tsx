@@ -1,26 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Check, Copy, LogOut, RefreshCw, X } from "lucide-react";
+import { LogOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buildCustomerAuthorizeUrl, cacheCustomerInitial, fetchCustomerProfile, hasNameCaptureBeenPrompted, logoutCustomer, markNameCapturePrompted } from "@/lib/customerAuth";
 import type { CustomerProfile } from "@/lib/customerAuth";
-import { toast } from "sonner";
 
-const WELCOME_OFFER_CODE = "Eclantian@6124";
-const WELCOME_OFFER_KEY = "eclantian_welcome_offer";
 const actionButtonClass = "bg-foreground text-background transition-colors duration-200 hover:bg-accent-gold hover:text-foreground";
 
 export default function AccountPage() {
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showWelcomeOffer, setShowWelcomeOffer] = useState(false);
-  const [copiedWelcomeOffer, setCopiedWelcomeOffer] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const hasWelcomeOffer = sessionStorage.getItem(WELCOME_OFFER_KEY) === "1";
     fetchCustomerProfile().then((customer) => {
       cacheCustomerInitial(customer.firstName);
       const hasName = Boolean(customer.firstName?.trim() || customer.lastName?.trim());
@@ -30,19 +24,13 @@ export default function AccountPage() {
         return;
       }
       setProfile(customer);
-      if (hasWelcomeOffer) {
-        setShowWelcomeOffer(true);
-        sessionStorage.removeItem(WELCOME_OFFER_KEY);
-      }
     }).catch((reason: unknown) => {
       if (reason instanceof Error && reason.message === "interactive_refresh_required") {
         buildCustomerAuthorizeUrl("none").then((url) => window.location.replace(url)).catch(() => {
-          sessionStorage.removeItem(WELCOME_OFFER_KEY);
           setError("Your session has expired. Please sign in again.");
         });
         return;
       }
-      sessionStorage.removeItem(WELCOME_OFFER_KEY);
       setError(reason instanceof Error && reason.message === "not_authenticated" ? "Sign in to view your account and order history." : "We could not load your account right now. Please try again.");
     }).finally(() => setLoading(false));
   }, [navigate]);
@@ -52,33 +40,6 @@ export default function AccountPage() {
     document.getElementById("orders")?.scrollIntoView({ block: "start" });
   }, [error, loading, location.hash]);
 
-  const welcomeOfferBanner = showWelcomeOffer && (
-    <div className="relative mb-8 flex flex-col gap-4 rounded-md border border-border bg-muted/40 p-4 pr-12 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm font-medium">Welcome, Eclantian. Your 10% code: <span className="font-semibold">{WELCOME_OFFER_CODE}</span></p>
-      <Button
-        type="button"
-        className={actionButtonClass}
-        size="sm"
-        onClick={() => {
-          void navigator.clipboard.writeText(WELCOME_OFFER_CODE).then(() => {
-            setCopiedWelcomeOffer(true);
-          }).catch(() => toast.error("Could not copy the code. Please select it to copy."));
-        }}
-      >
-        {copiedWelcomeOffer ? <Check /> : <Copy />}
-        {copiedWelcomeOffer ? "Copied" : "Copy"}
-      </Button>
-      <button
-        type="button"
-        aria-label="Dismiss welcome offer"
-        onClick={() => setShowWelcomeOffer(false)}
-        className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-md bg-foreground text-background transition-colors duration-200 hover:bg-accent-gold hover:text-foreground"
-      >
-        <X size={16} />
-      </button>
-    </div>
-  );
-
   if (loading) return <section className="container-narrow section-space text-center"><p className="eyebrow">Your account</p><h1 className="font-serif text-4xl mt-3">Loading your account.</h1><div className="mx-auto mt-8 h-7 w-7 rounded-full border border-foreground border-r-transparent animate-spin" role="status" aria-label="Loading" /></section>;
   if (error) return <section className="container-narrow section-space text-center"><p className="eyebrow">Your account</p><h1 className="font-serif text-4xl md:text-5xl mt-3">{error}</h1><div className="mt-8 flex justify-center gap-3"><Button asChild className={actionButtonClass}><Link to="/auth">Sign in</Link></Button><Button className={actionButtonClass} onClick={() => window.location.reload()}><RefreshCw /> Try again</Button></div></section>;
   if (!profile) return null;
@@ -86,7 +47,6 @@ export default function AccountPage() {
   const name = [profile.firstName?.trim(), profile.lastName?.trim()].filter(Boolean).join(" ");
   return (
     <section className="section-space"><div className="container-narrow">
-      {welcomeOfferBanner}
       <div className="flex flex-col gap-6 border-b border-border pb-10 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="eyebrow">Your account</p>
