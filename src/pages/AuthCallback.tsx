@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { exchangeCustomerCode } from "@/lib/customerAuth";
+import { exchangeCustomerCode, fetchCustomerProfile, hasNameCaptureBeenPrompted, markNameCapturePrompted } from "@/lib/customerAuth";
 
 const WELCOME_OFFER_KEY = "eclantian_welcome_offer";
 
@@ -20,7 +20,22 @@ export default function AuthCallbackPage() {
     }
     if (!code) { sessionStorage.removeItem(WELCOME_OFFER_KEY); setError("No sign-in code was returned. Please try again."); return () => { active = false; }; }
     exchangeCustomerCode(code, params.get("state"))
-      .then(() => { if (active) window.location.replace("/account"); })
+      .then(async () => {
+        if (!active) return;
+        let destination = "/account";
+        try {
+          const customer = await fetchCustomerProfile();
+          if (!active) return;
+          const hasName = Boolean(customer.firstName?.trim() || customer.lastName?.trim());
+          if (!hasName && !hasNameCaptureBeenPrompted(customer.id)) {
+            markNameCapturePrompted(customer.id);
+            destination = "/welcome-name";
+          }
+        } catch {
+          // A profile failure must not turn a successful sign-in into a failure.
+        }
+        if (active) window.location.replace(destination);
+      })
       .catch((reason: unknown) => {
         sessionStorage.removeItem(WELCOME_OFFER_KEY);
         if (active) setError(reason instanceof Error ? reason.message : "We could not complete sign in. Please try again.");

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Check, Copy, LogOut, RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { buildCustomerAuthorizeUrl, cacheCustomerInitial, fetchCustomerProfile, logoutCustomer } from "@/lib/customerAuth";
+import { buildCustomerAuthorizeUrl, cacheCustomerInitial, fetchCustomerProfile, hasNameCaptureBeenPrompted, logoutCustomer, markNameCapturePrompted } from "@/lib/customerAuth";
 import type { CustomerProfile } from "@/lib/customerAuth";
 import { toast } from "sonner";
 
@@ -17,11 +17,18 @@ export default function AccountPage() {
   const [showWelcomeOffer, setShowWelcomeOffer] = useState(false);
   const [copiedWelcomeOffer, setCopiedWelcomeOffer] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const hasWelcomeOffer = sessionStorage.getItem(WELCOME_OFFER_KEY) === "1";
     fetchCustomerProfile().then((customer) => {
       cacheCustomerInitial(customer.firstName);
+      const hasName = Boolean(customer.firstName?.trim() || customer.lastName?.trim());
+      if (!hasName && !hasNameCaptureBeenPrompted(customer.id)) {
+        markNameCapturePrompted(customer.id);
+        navigate("/welcome-name", { replace: true });
+        return;
+      }
       setProfile(customer);
       if (hasWelcomeOffer) {
         setShowWelcomeOffer(true);
@@ -38,7 +45,7 @@ export default function AccountPage() {
       sessionStorage.removeItem(WELCOME_OFFER_KEY);
       setError(reason instanceof Error && reason.message === "not_authenticated" ? "Sign in to view your account and order history." : "We could not load your account right now. Please try again.");
     }).finally(() => setLoading(false));
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (loading || error || location.hash !== "#orders") return;
@@ -76,18 +83,25 @@ export default function AccountPage() {
   if (error) return <section className="container-narrow section-space text-center"><p className="eyebrow">Your account</p><h1 className="font-serif text-4xl md:text-5xl mt-3">{error}</h1><div className="mt-8 flex justify-center gap-3"><Button asChild className={actionButtonClass}><Link to="/auth">Sign in</Link></Button><Button className={actionButtonClass} onClick={() => window.location.reload()}><RefreshCw /> Try again</Button></div></section>;
   if (!profile) return null;
 
-  const name = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || "Eclante customer";
+  const name = [profile.firstName?.trim(), profile.lastName?.trim()].filter(Boolean).join(" ");
   return (
     <section className="section-space"><div className="container-narrow">
       {welcomeOfferBanner}
       <div className="flex flex-col gap-6 border-b border-border pb-10 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="eyebrow">Your account</p>
-          <h1 className="font-serif mt-3 text-5xl md:text-6xl">Welcome, {name}.</h1>
+          <h1 className="font-serif mt-3 text-5xl md:text-6xl">{name ? `Welcome, ${name}.` : "Welcome."}</h1>
           <p className="mt-4 text-sm">{profile.emailAddress?.emailAddress}</p>
         </div>
         <Button className={actionButtonClass} onClick={() => void logoutCustomer()}><LogOut /> Sign out</Button>
       </div>
+
+      {!name && hasNameCaptureBeenPrompted(profile.id) && (
+        <div className="mt-6 flex flex-col gap-3 rounded-md border border-border bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">Your name hasn&apos;t been saved yet. You can retry whenever you&apos;re ready.</p>
+          <Button asChild className={actionButtonClass} size="sm"><Link to="/welcome-name?retry=1">Add your name</Link></Button>
+        </div>
+      )}
 
       <section className="mt-8 rounded-md border border-border bg-muted/40 p-6 sm:p-8">
         <p className="eyebrow">Track your order</p>

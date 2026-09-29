@@ -9,6 +9,8 @@ const STATE_KEY = "la-eclante.customer-auth-state";
 const NONCE_KEY = "la-eclante.customer-auth-nonce";
 const TOKENS_KEY = "la-eclante.customer-tokens";
 const CUSTOMER_INITIAL_KEY = "la-eclante.customer-initial";
+const NAME_CAPTURE_PROMPT_KEY = "la-eclante.name-capture-prompted.";
+export const CUSTOMER_INITIAL_UPDATED_EVENT = "la-eclante:customer-initial-updated";
 
 export interface CustomerAuthConfig {
   authorization_endpoint: string;
@@ -70,6 +72,7 @@ export interface CustomerLineItem {
 }
 
 export interface CustomerProfile {
+  id: string;
   firstName: string | null;
   lastName: string | null;
   emailAddress: { emailAddress: string } | null;
@@ -86,6 +89,7 @@ interface TokenResponse {
 const CUSTOMER_QUERY = `
   query CustomerAccount {
     customer {
+      id
       firstName
       lastName
       emailAddress { emailAddress }
@@ -102,6 +106,15 @@ const CUSTOMER_QUERY = `
           }
         }
       }
+    }
+  }
+`;
+
+const CUSTOMER_UPDATE_MUTATION = `
+  mutation CustomerUpdate($input: CustomerUpdateInput!) {
+    customerUpdate(input: $input) {
+      customer { firstName lastName }
+      userErrors { field message }
     }
   }
 `;
@@ -218,7 +231,25 @@ export function getCustomerInitial(): string | null {
 
 export function cacheCustomerInitial(firstName: string | null): void {
   const initial = firstName?.trim().charAt(0).toUpperCase();
-  if (initial) requireBrowserStorage().setItem(CUSTOMER_INITIAL_KEY, initial);
+  if (initial) {
+    requireBrowserStorage().setItem(CUSTOMER_INITIAL_KEY, initial);
+    window.dispatchEvent(new Event(CUSTOMER_INITIAL_UPDATED_EVENT));
+  }
+}
+
+export function hasNameCaptureBeenPrompted(customerId: string): boolean {
+  const key = `${NAME_CAPTURE_PROMPT_KEY}${encodeURIComponent(customerId)}`;
+  try {
+    if (window.localStorage.getItem(key) === "1") return true;
+  } catch { /* fall back to tab storage */ }
+  try { return window.sessionStorage.getItem(key) === "1"; } catch { return false; }
+}
+
+export function markNameCapturePrompted(customerId: string): void {
+  const key = `${NAME_CAPTURE_PROMPT_KEY}${encodeURIComponent(customerId)}`;
+  try { window.localStorage.setItem(key, "1"); } catch {
+    try { window.sessionStorage.setItem(key, "1"); } catch { /* browser storage unavailable */ }
+  }
 }
 
 export function clearCustomerTokens(): void {
@@ -257,6 +288,31 @@ export async function fetchCustomerProfile(): Promise<CustomerProfile> {
   const result = await apiResponse.json() as { data?: { customer: CustomerProfile }; errors?: Array<{ message: string }> };
   if (result.errors?.length || !result.data?.customer) throw new Error(result.errors?.[0]?.message || "Customer account data could not be loaded.");
   return result.data.customer;
+}
+
+export async function updateCustomerFirstName(firstName: string): Promise<{ firstName: string | null; lastName: string | null }> {
+  const accessToken = await getValidCustomerAccessToken();
+  if (!SHOPIFY_STORE_PERMANENT_DOMAIN) throw new Error("The Shopify storefront domain is not configured.");
+  const discoveryResponse = await fetch(`https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/.well-known/customer-account-api`);
+  if (!discoveryResponse.ok) throw new Error("Customer account data is temporarily unavailable.");
+  const apiConfig = await discoveryResponse.json() as { graphql_api?: string };
+  if (!apiConfig.graphql_api) throw new Error("Shopify returned an incomplete account API configuration.");
+  const response = await fetch(apiConfig.graphql_api, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: accessToken },
+    body: JSON.stringify({ query: CUSTOMER_UPDATE_MUTATION, variables: { input: { firstName } } }),
+  });
+  if (!response.ok) throw new Error("Your name could not be saved right now.");
+  const result = await response.json() as {
+    data?: { customerUpdate?: { customer: { firstName: string | null; lastName: string | null } | null; userErrors: Array<{ field: string[] | null; message: string }> } };
+    errors?: Array<{ message: string }>;
+  };
+  if (result.errors?.length) throw new Error(result.errors[0].message);
+  const payload = result.data?.customerUpdate;
+  if (!payload) throw new Error("Shopify could not update your name.");
+  if (payload.userErrors.length) throw new Error(payload.userErrors.map((userError) => userError.message).join(" "));
+  if (!payload.customer) throw new Error("Shopify did not return the updated name.");
+  return payload.customer;
 }
 
 export async function fetchCustomerOrder(orderId: string): Promise<CustomerOrderDetail | null> {
