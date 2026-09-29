@@ -175,7 +175,7 @@ const ProductDetail = () => {
               <ShieldCheck size={14} className="text-accent-gold" /> Non-comedogenic
             </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-2 text-micro uppercase text-muted-foreground">
-              <Sparkles size={14} className="text-accent-gold" /> Fragrance-free
+              <Sparkles size={14} className="text-accent-gold" /> Hypoallergenic
             </span>
           </div>
         </div>

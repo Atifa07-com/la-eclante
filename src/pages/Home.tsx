@@ -48,7 +48,7 @@ const Home = () => {
             <div className="mt-12 flex flex-wrap gap-x-8 gap-y-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Dermatologist tested</span>
               <span>Non-comedogenic</span>
-              <span>Fragrance-free</span>
+              <span>Hypoallergenic</span>
             </div>
           </div>
           <div className="md:col-span-6 reveal" style={{ animationDelay: "120ms" }}>
@@ -147,7 +147,7 @@ const Home = () => {
       <section className="section-blush container-wide section-space-lg">
         <div className="grid md:grid-cols-3 gap-10 md:gap-16">
           {[
-            { icon: Leaf, title: "Gentle by design", body: "Formulated without fragrance, essential oils, or irritants. Calm enough for daily use on reactive skin." },
+            { icon: Leaf, title: "Gentle by design", body: "Hypoallergenic and formulated without essential oils or irritants. Calm enough for daily use on reactive skin." },
             { icon: ShieldCheck, title: "Clinically effective", body: "Niacinamide, ceramides, salicylic acid — proven actives at the percentages your skin needs." },
             { icon: Sparkles, title: "Barrier-supporting", body: "Restores rather than strips. Designed to work with your skin, not against it." },
           ].map(({ icon: Icon, title, body }) => (

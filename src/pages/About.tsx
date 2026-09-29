@@ -40,7 +40,7 @@ const About = () => (
         <div className="grid md:grid-cols-3 gap-10">
           {[
             { title: "Clinical first.", body: "Every formula is dermatologist-reviewed and tested on reactive skin before it ships." },
-            { title: "Gentle always.", body: "Fragrance-free, dye-free, essential-oil-free. We exclude what reactive skin doesn't need." },
+            { title: "Gentle always.", body: "Hypoallergenic, dye-free, essential-oil-free. We exclude what reactive skin doesn't need." },
             { title: "Considered, never trendy.", body: "We don't chase ingredients of the moment. We build routines that hold up over time." },
           ].map((b) => (
             <div key={b.title}>
