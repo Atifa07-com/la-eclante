@@ -4,6 +4,7 @@ import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { NewsletterPopup } from "@/components/marketing/NewsletterPopup";
+import { OctoberLaunchPromo } from "@/components/marketing/OctoberLaunchPromo";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export function SiteLayout() {
@@ -26,6 +27,7 @@ export function SiteLayout() {
       </main>
       <Footer />
       <CartDrawer />
+      <OctoberLaunchPromo />
       <NewsletterPopup />
     </div>
   );
