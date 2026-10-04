@@ -39,11 +39,11 @@ export function NewsletterPopup() {
         else dismiss();
       }}
     >
-      <DialogContent className="max-w-md overflow-hidden rounded-2xl border-border p-0 shadow-elevated">
+      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-md overflow-y-auto overscroll-contain rounded-xl border-border p-0 shadow-elevated sm:max-h-[calc(100dvh-2rem)] sm:w-[calc(100vw-2rem)] sm:rounded-2xl">
         <div className="h-0.5 w-full bg-accent-gold" aria-hidden="true" />
-        <div className="px-7 pb-7 pt-8 md:px-9 md:pb-9">
+        <div className="px-5 pb-5 pt-6 sm:px-7 sm:pb-7 sm:pt-8 md:px-9 md:pb-9">
           <p className="eyebrow">BECOME AN ECLANTIAN</p>
-          <DialogTitle className="mt-3 font-serif text-3xl leading-tight font-normal">
+          <DialogTitle className="mt-3 font-serif text-2xl leading-tight font-normal sm:text-3xl">
             Know exactly where your order is.
           </DialogTitle>
           <DialogDescription className="mt-4 text-sm leading-relaxed text-muted-foreground">
@@ -58,7 +58,7 @@ export function NewsletterPopup() {
             type="button"
             variant="primary"
             onClick={becomeEclantian}
-            className="group mt-7 h-auto min-h-12 w-full whitespace-normal py-3"
+            className="group mt-5 h-auto min-h-12 w-full whitespace-normal py-3 sm:mt-7"
           >
             <span>Become an Eclantian</span>
             <ArrowRight className="shrink-0 transition-transform group-hover:translate-x-1" size={17} aria-hidden="true" />
