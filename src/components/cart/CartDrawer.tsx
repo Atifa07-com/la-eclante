@@ -44,7 +44,10 @@ export function CartDrawer() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 gap-0">
+      <SheetContent
+        side="right"
+        className="inset-y-auto right-3 top-1/2 h-[min(82dvh,42rem)] w-[min(88vw,24rem)] max-w-[min(88vw,24rem)] -translate-y-1/2 overflow-hidden rounded-xl border flex flex-col p-0 gap-0 md:inset-y-0 md:right-0 md:top-0 md:h-full md:w-96 md:max-w-96 md:translate-y-0 md:rounded-none"
+      >
         <SheetHeader className="px-6 py-5 border-b border-border">
           <SheetTitle className="font-serif text-2xl tracking-wide">Your bag</SheetTitle>
         </SheetHeader>

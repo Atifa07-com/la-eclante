@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
@@ -9,6 +9,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export function SiteLayout() {
   const location = useLocation();
+  const [launchPromoOpen, setLaunchPromoOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -27,8 +28,8 @@ export function SiteLayout() {
       </main>
       <Footer />
       <CartDrawer />
-      <OctoberLaunchPromo />
-      <NewsletterPopup />
+      <OctoberLaunchPromo onOpenChange={setLaunchPromoOpen} />
+      <NewsletterPopup blocked={launchPromoOpen} />
     </div>
   );
 }

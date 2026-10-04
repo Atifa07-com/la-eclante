@@ -13,20 +13,28 @@ import {
 
 const STORAGE_KEY = "hasSeenOctoberLaunchPromo";
 
-export function OctoberLaunchPromo() {
+interface OctoberLaunchPromoProps {
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function OctoberLaunchPromo({ onOpenChange }: OctoberLaunchPromoProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (localStorage.getItem(STORAGE_KEY)) return;
 
-    const timer = window.setTimeout(() => setOpen(true), 1200);
+    const timer = window.setTimeout(() => {
+      setOpen(true);
+      onOpenChange?.(true);
+    }, 1200);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [onOpenChange]);
 
   const dismiss = () => {
     localStorage.setItem(STORAGE_KEY, "1");
     setOpen(false);
+    onOpenChange?.(false);
   };
 
   const availOffer = () => {

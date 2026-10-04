@@ -7,17 +7,21 @@ import { getCustomerTokens } from "@/lib/customerAuth";
 
 const STORAGE_KEY = "la-eclante-popup-shown-v1";
 
-export function NewsletterPopup() {
+interface NewsletterPopupProps {
+  blocked?: boolean;
+}
+
+export function NewsletterPopup({ blocked = false }: NewsletterPopupProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || blocked) return;
     if (getCustomerTokens()) return;
     if (sessionStorage.getItem(STORAGE_KEY)) return;
     const t = setTimeout(() => setOpen(true), 8000);
     return () => clearTimeout(t);
-  }, []);
+  }, [blocked]);
 
   const dismiss = () => {
     setOpen(false);
