@@ -18,11 +18,13 @@ import WelcomeName from "./pages/WelcomeName";
 import OrderDetail from "./pages/OrderDetail";
 import NotFound from "./pages/NotFound";
 import { useCartSync } from "@/hooks/useCartSync";
+import { useMetaPixelPageView } from "@/lib/metaPixel";
 
 const queryClient = new QueryClient();
 
 const AppRoutes = () => {
   useCartSync();
+  useMetaPixelPageView();
   return (
     <Routes>
       <Route element={<SiteLayout />}>
