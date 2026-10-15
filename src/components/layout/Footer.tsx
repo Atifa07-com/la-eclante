@@ -4,6 +4,7 @@ import { z } from "zod";
 import { ArrowUpRight, Instagram } from "lucide-react";
 import { subscribeToNewsletter } from "@/lib/customer";
 import { toast } from "sonner";
+import DermatologistCTA from "@/components/marketing/DermatologistCTA";
 
 const emailSchema = z.string().trim().email().max(255);
 
@@ -131,6 +132,10 @@ export function Footer() {
             <li><Link to="/account" className="hover:opacity-60">Account</Link></li>
             <li><a href="mailto:hello@la-eclante.com" className="hover:opacity-60">Contact</a></li>
           </ul>
+        </div>
+
+        <div className="md:col-span-12">
+          <DermatologistCTA variant="footer" />
         </div>
       </div>
 

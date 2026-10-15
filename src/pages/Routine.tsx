@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import DermatologistCTA from "@/components/marketing/DermatologistCTA";
 import { ArrowLeft, Check, Droplet, FlaskConical, MoonStar, Sparkles } from "lucide-react";
 import routineLineup from "@/assets/routine-lineup.jfif";
 import productCleanser from "@/assets/anti-acne-facewash.jfif";
@@ -431,6 +432,8 @@ const Routine = () => {
           </div>
         </div>
       </section>
+
+      <DermatologistCTA variant="routine" />
 
       <section className="container-wide section-space">
         <div className="text-center mb-14 md:mb-20">

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import heroProduct from "@/assets/hero-product.jfif";
 import aboutPortrait from "@/assets/doctors image.jfif";
 import { Button } from "@/components/ui/button";
+import DermatologistCTA from "@/components/marketing/DermatologistCTA";
 import { fetchProducts, formatMoney, type ShopifyProduct } from "@/lib/shopify";
 import { Leaf, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
 
@@ -64,6 +65,8 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      <DermatologistCTA variant="home" />
 
       {/* BRAND STORY */}
       <section className="section-blush container-narrow section-space-lg text-center">
