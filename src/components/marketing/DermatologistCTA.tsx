@@ -15,7 +15,7 @@ const DOCTORS = [
   },
   {
     name: "Dr. Arfa",
-    credential: "MBBS, Dermatologist",
+    credential: "MBBS, Resident Doctor",
     copy: "Dr. Arfa offers professional guidance for your individual skin concerns. A consultation can help turn those concerns into a clearer, more considered skincare plan.",
     preference: "Select Female in the form to direct your request to Dr. Arfa.",
   },
