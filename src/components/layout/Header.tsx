@@ -12,7 +12,7 @@ const links = [
   { to: "/about", label: "About" },
 ];
 
-export function Header() {
+export function Header({ saleBannerVisible = false }: { saleBannerVisible?: boolean }) {
   const { setOpen, count } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -47,7 +47,8 @@ export function Header() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full transition-all duration-500 ease-smooth border-b",
+        "sticky z-40 w-full transition-all duration-500 ease-smooth border-b",
+        saleBannerVisible ? "top-11" : "top-0",
         scrolled || mobileOpen
           ? "bg-charcoal/95 text-background backdrop-blur-md border-background/15"
             : "bg-charcoal text-background backdrop-blur-sm border-background/10"
