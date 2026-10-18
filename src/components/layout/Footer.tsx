@@ -9,7 +9,7 @@ import DermatologistCTA from "@/components/marketing/DermatologistCTA";
 const emailSchema = z.string().trim().email().max(255);
 
 const INSTAGRAM_URL = "https://instagram.com/laeclante";
-const WHATSAPP_URL = "https://wa.me/923355865864";
+const WHATSAPP_URL = "https://wa.me/923259864991";
 
 function WhatsAppIcon({ size = 18 }: { size?: number }) {
   return (
@@ -100,7 +100,7 @@ export function Footer() {
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Message Dr. Arfa directly on WhatsApp"
+              aria-label="Direct contact with our teams via WhatsApp"
               className="group flex min-w-0 items-center gap-3 rounded-md border border-background/15 bg-background/[0.04] px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#25D366]/70 hover:bg-[#25D366]/10"
             >
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-[#25D366]/15 text-[#25D366]">
@@ -108,8 +108,8 @@ export function Footer() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[10px] uppercase tracking-[0.16em] text-background/55">WhatsApp</span>
-                <span className="mt-1 block truncate text-sm font-medium text-background">Message Dr. Arfa</span>
-                <span className="mt-0.5 block truncate text-[11px] text-background/55">Direct dermatologist contact</span>
+                <span className="mt-1 block truncate text-sm font-medium text-background">Contact La Eclante</span>
+                <span className="mt-0.5 block truncate text-[11px] text-background/55">Direct contact with our team</span>
               </span>
               <ArrowUpRight size={16} className="shrink-0 text-background/45 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-background" aria-hidden="true" />
             </a>

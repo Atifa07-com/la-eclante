@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 
-const BOOKING_URL = "https://forms.gle/XN24QU78XSfUVHjT6";
+const BOOKING_URL = "https://wa.me/923259864991";
 
 type DermatologistCTAProps = {
   variant?: "home" | "routine" | "footer";
@@ -11,13 +11,13 @@ const DOCTORS = [
     name: "Dr. Waqas Ahmad",
     credential: "Speciality Registrar, FCPS Dermatology",
     copy: "Eclantian routines are reviewed by Dr. Waqas Ahmad, a qualified, FCPS-certified dermatologist. His clinical perspective helps shape thoughtful care for acne-prone and sensitive skin.",
-    preference: "Select Male in the form to direct your request to Dr. Waqas Ahmad.",
+    preference: "Contact our team to ask about a consultation with Dr. Waqas Ahmad.",
   },
   {
     name: "Dr. Arfa",
     credential: "MBBS, Resident Doctor",
     copy: "Dr. Arfa offers professional guidance for your individual skin concerns. A consultation can help turn those concerns into a clearer, more considered skincare plan.",
-    preference: "Select Female in the form to direct your request to Dr. Arfa.",
+    preference: "Contact our team to ask about a consultation with Dr. Arfa.",
   },
 ];
 
