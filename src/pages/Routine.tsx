@@ -45,7 +45,7 @@ const ROUTINES: RoutineDef[] = [
     id: "clarity",
     name: "ECLANTIAN CLARITY",
     description:
-      "A considered two-step foundation for maintaining balance and supporting skin through early-stage breakouts.",
+      "A considered three-step foundation for maintaining balance and supporting skin through early-stage breakouts.",
     bestFor: "MILD / EARLY-STAGE ACNE",
     bundleHandles: {
       "1": "eclantian-clarity-routine-essential-2-step-foundation",
@@ -53,6 +53,13 @@ const ROUTINES: RoutineDef[] = [
       "6": "eclantian-clarity-routine-essential-2-step-foundation-6-month",
     },
     products: [
+      {
+        name: "Anti-Acne Treatment Serum",
+        description: "A daily targeted serum to help control excess oil and prevent clogged pores.",
+        image: productSerum,
+        price: 2400,
+        type: "acne-serum",
+      },
       {
         name: "Anti-Acne Face Wash",
         description: "Purify without disrupting your skin with a gentle daily cleanse.",
@@ -82,18 +89,18 @@ const ROUTINES: RoutineDef[] = [
     },
     products: [
       {
+        name: "Advanced Acne Treatment Serum",
+        description: "Targeted treatment for active blemishes and recurring congestion.",
+        image: productTreatment,
+        price: 2800,
+        type: "acne-serum",
+      },
+      {
         name: "Anti-Acne Face Wash",
         description: "A clear, comfortable cleanse that lifts excess oil and daily buildup.",
         image: productCleanser,
         price: 1400,
         type: "cleanser",
-      },
-      {
-        name: "Anti-Acne Treatment Serum",
-        description: "Targeted treatment for active blemishes and recurring congestion.",
-        image: productSerum,
-        price: 2400,
-        type: "acne-serum",
       },
       {
         name: "Korean Glass Skin Moisturiser",
@@ -117,18 +124,11 @@ const ROUTINES: RoutineDef[] = [
     },
     products: [
       {
-        name: "Anti-Acne Face Wash",
-        description: "A daily reset that prepares skin for a more focused treatment routine.",
-        image: productCleanser,
-        price: 1400,
-        type: "cleanser",
-      },
-      {
-        name: "Advanced Acne Treatment Serum",
-        description: "Intensive care for persistent breakouts, used with a measured hand.",
-        image: productTreatment,
-        price: 2800,
-        type: "acne-serum",
+        name: "Retinol Serum",
+        description: "A considered night renewal step for texture and long-term clarity.",
+        image: productRetinal,
+        price: 3200,
+        type: "retinal",
       },
       {
         name: "Korean Glass Skin Moisturiser",
@@ -136,6 +136,13 @@ const ROUTINES: RoutineDef[] = [
         image: productMoisturizer,
         price: 1800,
         type: "moisturizer",
+      },
+      {
+        name: "Anti-Acne Face Wash",
+        description: "A daily reset that prepares skin for a more focused treatment routine.",
+        image: productCleanser,
+        price: 1400,
+        type: "cleanser",
       },
     ],
   },
@@ -191,31 +198,15 @@ const formatPKR = (n: number) => `Rs. ${n.toLocaleString("en-PK")}`;
 const getRoutineProductLabel = (product: RoutineProduct) => {
   if (product.type === "cleanser") return "Face Wash";
   if (product.type === "moisturizer") return "Moisturiser";
-  if (product.type === "retinal") return "Retinal Serum";
-  return product.name.startsWith("Advanced") ? "Advanced Serum" : "Treatment";
+  if (product.type === "retinal") return "Retinol Serum";
+  return product.name.startsWith("Advanced") ? "Advanced Serum" : "Anti-Acne Serum";
 };
 
-const FRONTEND_PRICES: Record<string, Record<CommitmentKey, { price: number; original: number }>> = {
-  clarity: {
-    "1": { price: 2720, original: 3200 },
-    "3": { price: 2560, original: 3200 },
-    "6": { price: 2400, original: 3200 },
-  },
-  balance: {
-    "1": { price: 4760, original: 5600 },
-    "3": { price: 4480, original: 5600 },
-    "6": { price: 4200, original: 5600 },
-  },
-  renewal: {
-    "1": { price: 5100, original: 6000 },
-    "3": { price: 4800, original: 6000 },
-    "6": { price: 4500, original: 6000 },
-  },
-  "professional-support": {
-    "1": { price: 7820, original: 9200 },
-    "3": { price: 7360, original: 9200 },
-    "6": { price: 6900, original: 9200 },
-  },
+const ORIGINAL_MONTHLY_PRICES: Record<string, number> = {
+  clarity: 5600,
+  balance: 6000,
+  renewal: 6400,
+  "professional-support": 9200,
 };
 
 const Routine = () => {
@@ -275,12 +266,12 @@ const Routine = () => {
   if (selected) {
     const commitment = getSelectedCommitment(selected);
     const selectedBundle = getSelectedBundle(selected);
-    const frontendPrice = FRONTEND_PRICES[selected.id][commitment];
     const months = Number(commitment);
-    const selectedVariantPrice = selectedBundle?.variants.edges[0]?.node.price.amount;
-    const chargedTotal = selectedVariantPrice === undefined ? null : Number(selectedVariantPrice);
-    const totalSavings = chargedTotal !== null && Number.isFinite(chargedTotal)
-      ? frontendPrice.original * months - chargedTotal
+    const originalMonthlyPrice = ORIGINAL_MONTHLY_PRICES[selected.id];
+    const bundleTotal = selectedBundle ? Number(selectedBundle.priceRange.minVariantPrice.amount) : null;
+    const monthlyPrice = bundleTotal !== null && Number.isFinite(bundleTotal) ? bundleTotal / months : null;
+    const totalSavings = bundleTotal !== null && Number.isFinite(bundleTotal)
+      ? originalMonthlyPrice * months - bundleTotal
       : null;
     return (
       <div>
@@ -352,11 +343,11 @@ const Routine = () => {
               </div>
               <div className="md:text-right">
                 <p className="text-sm text-muted-foreground line-through">
-                  {formatPKR(frontendPrice.original)}
+                  {formatPKR(originalMonthlyPrice)}
                 </p>
                 <p className="mt-1 flex min-w-0 flex-wrap items-baseline gap-2 md:justify-end">
                   <span className="font-serif text-4xl md:text-5xl">
-                  {formatPKR(frontendPrice.price)}
+                    {monthlyPrice === null ? "—" : formatPKR(Number(monthlyPrice.toFixed(2)))}
                   </span>
                   <span className="text-xs tracking-wide text-muted-foreground">/mo</span>
                 </p>
@@ -447,12 +438,12 @@ const Routine = () => {
           {ROUTINES.map((r) => {
             const commitment = getSelectedCommitment(r);
             const selectedBundle = getSelectedBundle(r);
-            const frontendPrice = FRONTEND_PRICES[r.id][commitment];
+            const originalMonthlyPrice = ORIGINAL_MONTHLY_PRICES[r.id];
             const months = Number(commitment);
             const bundleTotal = selectedBundle ? Number(selectedBundle.priceRange.minVariantPrice.amount) : null;
             const monthlyPrice = bundleTotal !== null && Number.isFinite(bundleTotal) ? bundleTotal / months : null;
             const totalSavings = bundleTotal !== null && Number.isFinite(bundleTotal)
-              ? frontendPrice.original * months - bundleTotal
+              ? originalMonthlyPrice * months - bundleTotal
               : null;
             return (
               <article
@@ -507,7 +498,7 @@ const Routine = () => {
                     </span>
                     <span className="shrink-0 text-xs tracking-wide text-muted-foreground">/mo</span>
                     <span className={`shrink-0 text-sm line-through ${r.luxury ? "text-[#b9aa82]" : "text-muted-foreground"}`}>
-                      {formatPKR(frontendPrice.original)}
+                      {formatPKR(originalMonthlyPrice)}
                     </span>
                   </div>
                   {commitment === "1" ? (
